@@ -12,11 +12,12 @@ class LectureNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final LecturenavController controller = Get.put(LecturenavController());
+    final theme = Theme.of(context).colorScheme;
 
     return Scaffold(
       bottomNavigationBar: Obx(() {
         return BottomNavigationBar(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.onSecondary,
           currentIndex: controller.selectedIndex.value,
           onTap: controller.changeIndex,
           elevation: 8, // Added elevation effect

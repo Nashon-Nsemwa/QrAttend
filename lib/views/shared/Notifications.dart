@@ -9,7 +9,7 @@ class Notifications extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final NotificationController controller = Get.put(NotificationController());
-
+    final theme = Theme.of(context).colorScheme;
     return Obx(
       () => Scaffold(
         appBar:
@@ -20,7 +20,7 @@ class Notifications extends StatelessWidget {
                     "Notifications",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  backgroundColor: Colors.blue,
+                  backgroundColor: theme.onSecondaryFixed,
                 ),
 
         body: Padding(
@@ -49,7 +49,7 @@ class Notifications extends StatelessWidget {
                     color:
                         isSelected
                             ? Colors.blue.withOpacity(0.2)
-                            : Colors.white,
+                            : theme.onSecondary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -60,7 +60,7 @@ class Notifications extends StatelessWidget {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: isSelected ? Colors.blue : Colors.black,
+                          color: isSelected ? Colors.blue : theme.onPrimary,
                         ),
                       ),
                       subtitle: Column(
@@ -71,13 +71,13 @@ class Notifications extends StatelessWidget {
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
-                              color: isSelected ? Colors.blue : Colors.black,
+                              color: isSelected ? Colors.blue : theme.onPrimary,
                             ),
                           ),
                           SizedBox(height: 4),
                           Text(
                             notification.content,
-                            style: TextStyle(color: Colors.black87),
+                            style: TextStyle(color: theme.onPrimary),
                           ),
                         ],
                       ),

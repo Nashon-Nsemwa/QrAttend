@@ -5,6 +5,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:qrattend/bindings/LectureBindings.dart';
 import 'package:qrattend/bindings/SharedBindings.dart';
 import 'package:qrattend/bindings/StudentBindings.dart';
+import 'package:qrattend/config/theme.dart';
 
 import 'package:qrattend/controllers/Shared/UserSessionController.dart';
 import 'package:qrattend/controllers/Shared/ThemeController.dart'; //
@@ -63,14 +64,8 @@ class MyApp extends StatelessWidget {
       () => GetMaterialApp(
         debugShowCheckedModeBanner: false,
         initialRoute: '/',
-        theme: ThemeData(
-          scaffoldBackgroundColor: const Color(0xFFF0F4FF),
-          textSelectionTheme: const TextSelectionThemeData(
-            selectionColor: Colors.blue,
-            selectionHandleColor: Colors.blue,
-          ),
-        ),
-        darkTheme: ThemeData.dark(), // Optional: customize your dark theme here
+        theme: lightmode,
+        darkTheme: darkmode, // Optional: customize your dark theme here
         themeMode:
             themeController.isDarkMode.value ? ThemeMode.dark : ThemeMode.light,
         getPages: [

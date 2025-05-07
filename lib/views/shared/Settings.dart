@@ -11,10 +11,11 @@ class Settings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: Text("Settings", style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blue,
+        backgroundColor: theme.onSecondaryFixed,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -35,7 +36,7 @@ class Settings extends StatelessWidget {
               // Account Category inside a white container
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: theme.onSecondary,
                   borderRadius: BorderRadius.circular(
                     16,
                   ), // Adjust the radius as needed
@@ -56,6 +57,7 @@ class Settings extends StatelessWidget {
                           Get.toNamed("/Lecture_Profile");
                         }
                       },
+                      context: context,
                     ),
                     _buildListTile(
                       icon: Icons.logout_rounded,
@@ -78,6 +80,7 @@ class Settings extends StatelessWidget {
                           },
                         );
                       },
+                      context: context,
                     ),
                   ],
                 ),
@@ -95,7 +98,7 @@ class Settings extends StatelessWidget {
               // General Category inside a white container
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: theme.onSecondary,
                   borderRadius: BorderRadius.circular(
                     16,
                   ), // Adjust the radius as needed
@@ -104,13 +107,12 @@ class Settings extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 10),
-
                     _buildListTile(
                       icon: Icons.nightlight_round,
                       title: "Theme",
                       trailing: Obx(
                         () => Switch(
-                          activeColor: Colors.black,
+                          activeColor: theme.onPrimary,
                           value: themeController.isDarkMode.value,
                           onChanged: (value) {
                             themeController.toggleTheme();
@@ -119,6 +121,7 @@ class Settings extends StatelessWidget {
                       ),
                       onTap:
                           () {}, // No need for tap if you're using the toggle
+                      context: context,
                     ),
                     _buildListTile(
                       icon: Icons.star_border,
@@ -126,6 +129,7 @@ class Settings extends StatelessWidget {
                       onTap: () {
                         // Handle Rate us action
                       },
+                      context: context,
                     ),
                     _buildListTile(
                       icon: Icons.info_outline,
@@ -134,6 +138,7 @@ class Settings extends StatelessWidget {
                         // Handle About action
                         Get.toNamed("/About");
                       },
+                      context: context,
                     ),
                   ],
                 ),
@@ -151,7 +156,7 @@ class Settings extends StatelessWidget {
               // Privacy & Account Terms Category inside a white container
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: theme.onSecondary,
                   borderRadius: BorderRadius.circular(
                     16,
                   ), // Adjust the radius as needed
@@ -167,6 +172,7 @@ class Settings extends StatelessWidget {
                         // Handle Privacy Policy action
                         Get.toNamed("/PrivacyPolicy");
                       },
+                      context: context,
                     ),
                     _buildListTile(
                       icon: Icons.document_scanner_outlined,
@@ -175,6 +181,7 @@ class Settings extends StatelessWidget {
                         // Handle Terms & Conditions action
                         Get.toNamed("/TermsConditions");
                       },
+                      context: context,
                     ),
                   ],
                 ),
@@ -190,20 +197,23 @@ class Settings extends StatelessWidget {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
-    Widget? trailing, // Add this line
+    Widget? trailing,
+    required BuildContext context, // Add BuildContext parameter
   }) {
+    final theme = Theme.of(context).colorScheme;
     return ListTile(
-      leading: Icon(icon, color: Colors.black),
+      leading: Icon(icon, color: theme.onPrimary),
       title: Text(
         title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: theme.onPrimary,
+        ),
       ),
       trailing:
           trailing ??
-          const Icon(
-            Icons.arrow_forward_ios,
-            size: 16,
-          ), // Use custom trailing if provided
+          Icon(Icons.arrow_forward_ios, size: 16, color: theme.onPrimary),
       onTap: onTap,
     );
   }

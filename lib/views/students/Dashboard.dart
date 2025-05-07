@@ -9,10 +9,11 @@ class StudentDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     int crossAxisCount = screenWidth > 600 ? 3 : 2; // Adjust for tablets
+    final theme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: theme.onSecondaryFixed,
         title: Row(
           children: [
             CircleAvatar(
@@ -89,15 +90,17 @@ class StudentDashboard extends StatelessWidget {
               // "View Attendance" Card
               Card(
                 elevation: 3,
-                color: Colors.white,
+                color: theme.onSecondary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
                   leading: SvgPicture.asset(
                     'assets/icons/attendance-person.svg',
+
                     width: 30,
                     height: 30,
+                    color: theme.onPrimary,
                   ),
                   title: Text(
                     "View Attendance",
@@ -114,45 +117,55 @@ class StudentDashboard extends StatelessWidget {
     );
   }
 
-  // Updated dashboard item to include tap navigation
   Widget _dashboardItem({
     required String iconPath,
     required String label,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        color: Colors.blue,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                iconPath,
-                width: 50,
-                height: 50,
-                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-              ),
-              SizedBox(height: 10),
-              Flexible(
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+    return Builder(
+      builder: (context) {
+        final theme = Theme.of(context).colorScheme;
+        return GestureDetector(
+          onTap: onTap,
+          child: Card(
+            color:
+                theme.secondary, // Changed from Colors.blue to theme.secondary
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    iconPath,
+                    width: 50,
+                    height: 50,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
+                    ),
                   ),
-                ),
+                  SizedBox(height: 10),
+                  Flexible(
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

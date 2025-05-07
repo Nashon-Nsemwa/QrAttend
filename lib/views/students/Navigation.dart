@@ -12,6 +12,7 @@ class StudentNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final StudentnavController controller = Get.put(StudentnavController());
+    final theme = Theme.of(context).colorScheme;
 
     return WillPopScope(
       onWillPop: () async {
@@ -27,7 +28,7 @@ class StudentNavigation extends StatelessWidget {
       child: Scaffold(
         bottomNavigationBar: Obx(() {
           return BottomNavigationBar(
-            backgroundColor: Colors.white,
+            backgroundColor: theme.onSecondary,
             currentIndex: controller.selectedIndex.value,
             onTap: controller.changeIndex,
             elevation: 8, // Added elevation effect
