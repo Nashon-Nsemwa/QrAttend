@@ -10,13 +10,14 @@ class Modules extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           "Modules",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: theme.onSecondaryFixed,
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
@@ -35,7 +36,7 @@ class Modules extends StatelessWidget {
             itemBuilder: (context, index) {
               ModuleModel module = controller.moduleList[index];
               return Card(
-                color: Colors.white,
+                color: theme.onSecondary,
                 elevation: 5,
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 shape: RoundedRectangleBorder(

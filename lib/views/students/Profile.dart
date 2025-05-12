@@ -12,8 +12,9 @@ class ProfileStudent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: theme.primary,
       body: Obx(() {
         final isEditing = controller.isEditing.value;
         final student = controller.student.value;
@@ -25,7 +26,7 @@ class ProfileStudent extends StatelessWidget {
               children: [
                 // Header
                 Container(
-                  color: Colors.white,
+                  color: theme.onSecondary,
                   padding: EdgeInsets.only(
                     top: MediaQuery.of(context).padding.top,
                     bottom: 16,
@@ -105,7 +106,7 @@ class ProfileStudent extends StatelessWidget {
                     child: Column(
                       children: [
                         Card(
-                          color: Colors.white,
+                          color: theme.onSecondary,
                           elevation: 2,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -245,7 +246,7 @@ class ProfileStudent extends StatelessWidget {
                       padding: const EdgeInsets.all(20),
                       margin: const EdgeInsets.symmetric(horizontal: 30),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: theme.onSecondary,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(

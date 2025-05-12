@@ -10,13 +10,14 @@ class StudentAttendance extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           "Attendance",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: theme.onSecondaryFixed,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -169,7 +170,7 @@ class StudentAttendance extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final detail = controller.attendanceDetails[index];
                       return Card(
-                        color: Colors.white,
+                        color: theme.onSecondary,
                         child: ListTile(
                           leading: Icon(
                             detail.status == 'Present'
