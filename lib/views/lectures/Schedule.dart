@@ -10,13 +10,14 @@ class LectureSchedule extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           "Schedule",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: theme.onSecondaryFixed,
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -149,7 +150,7 @@ class LectureSchedule extends StatelessWidget {
                       itemBuilder: (context, index) {
                         var item = daySchedule[index];
                         return Card(
-                          color: Colors.white,
+                          color: theme.onSecondary,
                           elevation: 1,
                           margin: const EdgeInsets.symmetric(vertical: 5),
                           child: Padding(

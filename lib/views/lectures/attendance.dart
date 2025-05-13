@@ -11,18 +11,21 @@ class LectureAttendance extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           "Attendance",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: theme.onSecondaryFixed,
       ),
       body: Obx(
         () =>
             controller.isLoading.value
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(
+                  child: CircularProgressIndicator(color: Colors.blue),
+                )
                 : RefreshIndicator(
                   onRefresh: controller.fetchAttendance,
                   child: SingleChildScrollView(
@@ -119,7 +122,7 @@ class LectureAttendance extends StatelessWidget {
                             child: Column(
                               children: [
                                 Container(
-                                  color: Colors.white,
+                                  color: theme.onSecondary,
                                   child: const TabBar(
                                     labelStyle: TextStyle(
                                       color: Colors.blue,

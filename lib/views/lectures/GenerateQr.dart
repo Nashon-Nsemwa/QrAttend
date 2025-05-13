@@ -17,13 +17,14 @@ class GenerateQr extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showBottomSheet(context);
     });
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: theme.onSecondaryFixed,
         title: const Text(
           "Generate QR Code",
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -33,7 +34,11 @@ class GenerateQr extends StatelessWidget {
             onPressed: () {
               _showBottomSheet(context);
             },
-            icon: SvgPicture.asset('assets/icons/generateqr.svg', height: 24),
+            icon: SvgPicture.asset(
+              'assets/icons/generateqr.svg',
+              height: 24,
+              color: theme.onPrimary,
+            ),
           ),
         ],
       ),
@@ -108,30 +113,33 @@ class GenerateQr extends StatelessWidget {
                         const SizedBox(height: 25),
 
                         // QR Details Card
-                        Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          color: Colors.blue.shade50,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _detailRow(
-                                  "📚 Course",
-                                  controller.selectedCourse.value,
-                                ),
-                                _detailRow(
-                                  "📖 Module",
-                                  controller.selectedModule.value,
-                                ),
-                                _detailRow(
-                                  "📅 Generated on",
-                                  controller.getFormattedDate(),
-                                ),
-                              ],
+                        SizedBox(
+                          width: 300,
+                          child: Card(
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            color: Colors.blue,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _detailRow(
+                                    "Course",
+                                    controller.selectedCourse.value,
+                                  ),
+                                  _detailRow(
+                                    "Module",
+                                    controller.selectedModule.value,
+                                  ),
+                                  _detailRow(
+                                    "Generated on",
+                                    controller.getFormattedDate(),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -232,7 +240,9 @@ class GenerateQr extends StatelessWidget {
   }
 
   void _showBottomSheet(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
     showModalBottomSheet(
+      backgroundColor: theme.onSecondary,
       enableDrag: false,
       isDismissible: true,
       isScrollControlled: true,

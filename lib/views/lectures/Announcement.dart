@@ -9,13 +9,14 @@ class Announcement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: Text(
           'Announcement',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: theme.onSecondaryFixed,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
@@ -25,11 +26,15 @@ class Announcement extends StatelessWidget {
             // Course Selection Dropdown
             Obx(() {
               if (controller.isLoadingCourses.value) {
-                return Center(child: CircularProgressIndicator());
+                return Center(
+                  child: CircularProgressIndicator(color: Colors.blue),
+                );
               }
               return DropdownButtonFormField<String>(
                 value: controller.selectedCourse.value,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: theme.onSecondary,
                   labelText: "Select Course",
                   labelStyle: TextStyle(color: Colors.grey),
                   border: OutlineInputBorder(
@@ -58,6 +63,8 @@ class Announcement extends StatelessWidget {
               cursorColor: Colors.blue,
               onChanged: (value) => controller.title.value = value,
               decoration: InputDecoration(
+                filled: true,
+                fillColor: theme.onSecondary,
                 labelText: "Title",
                 labelStyle: TextStyle(color: Colors.grey),
                 border: OutlineInputBorder(
@@ -77,6 +84,8 @@ class Announcement extends StatelessWidget {
               cursorColor: Colors.blue,
               onChanged: (value) => controller.content.value = value,
               decoration: InputDecoration(
+                filled: true,
+                fillColor: theme.onSecondary,
                 labelText: "Content",
                 labelStyle: TextStyle(color: Colors.grey),
                 border: OutlineInputBorder(

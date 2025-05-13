@@ -9,13 +9,14 @@ class StudentList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           "Student List",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: theme.onSecondaryFixed,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -115,7 +116,9 @@ class StudentList extends StatelessWidget {
                           ),
                         )
                         : controller.isLoading.value
-                        ? const Center(child: CircularProgressIndicator())
+                        ? const Center(
+                          child: CircularProgressIndicator(color: Colors.blue),
+                        )
                         : controller.filteredStudents.isEmpty
                         ? const Center(child: Text("No students found."))
                         : ListView.builder(
@@ -123,6 +126,7 @@ class StudentList extends StatelessWidget {
                           itemBuilder: (context, index) {
                             final student = controller.filteredStudents[index];
                             return Card(
+                              color: theme.onSecondary,
                               elevation: 1,
                               child: ListTile(
                                 leading: const CircleAvatar(
@@ -146,7 +150,7 @@ class StudentList extends StatelessWidget {
                                 trailing: IconButton(
                                   icon: const Icon(Icons.info_outline),
                                   onPressed: () {
-                                    showStudentDetailsDialog(student);
+                                    showStudentDetailsDialog(student, context);
                                   },
                                 ),
                               ),
@@ -161,10 +165,11 @@ class StudentList extends StatelessWidget {
     );
   }
 
-  void showStudentDetailsDialog(student) {
+  void showStudentDetailsDialog(student, BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
     Get.dialog(
       Dialog(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.onSecondary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -261,7 +266,13 @@ class StudentList extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(value, style: const TextStyle(color: Colors.black87)),

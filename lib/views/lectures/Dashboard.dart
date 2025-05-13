@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 class LectureDashboard extends StatelessWidget {
@@ -9,10 +9,11 @@ class LectureDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     int crossAxisCount = screenWidth > 600 ? 3 : 2; // Adjust for tablets
+    final theme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: theme.onSecondaryFixed,
         title: Row(
           children: [
             CircleAvatar(
@@ -77,6 +78,7 @@ class LectureDashboard extends StatelessWidget {
                       ];
 
                       return _dashboardItem(
+                        context: context,
                         iconPath: items[index]['icon']!,
                         label: items[index]['label']!,
                         onTap: () => Get.toNamed(items[index]['route']),
@@ -89,7 +91,7 @@ class LectureDashboard extends StatelessWidget {
               // "View Attendance" Card
               Card(
                 elevation: 3,
-                color: Colors.white,
+                color: theme.onSecondary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -98,6 +100,7 @@ class LectureDashboard extends StatelessWidget {
                     'assets/icons/attendance-person.svg',
                     width: 30,
                     height: 30,
+                    color: theme.onPrimary,
                   ),
                   title: Text(
                     "View Attendance",
@@ -114,16 +117,18 @@ class LectureDashboard extends StatelessWidget {
     );
   }
 
-  // Updated dashboard item to include tap navigation
   Widget _dashboardItem({
+    required BuildContext context,
     required String iconPath,
     required String label,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Card(
-        color: Colors.blue,
+        color: theme.secondary, // Match StudentDashboard's theme
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
