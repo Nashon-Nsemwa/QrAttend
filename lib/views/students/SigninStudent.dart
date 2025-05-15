@@ -10,7 +10,6 @@ class SigninStudent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xF0F6FBFF), // Light blue background
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -37,6 +36,7 @@ class SigninStudent extends StatelessWidget {
                     hintText: "Registration Number",
                     controller: controller.regNoController,
                     icon: Icons.school_rounded,
+                    context: context,
                   ),
                   const SizedBox(height: 20),
                   Obx(
@@ -54,6 +54,7 @@ class SigninStudent extends StatelessWidget {
                         ),
                         onPressed: controller.togglePasswordVisibility,
                       ),
+                      context: context,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -122,10 +123,11 @@ class SigninStudent extends StatelessWidget {
     required IconData icon,
     bool obscure = false,
     Widget? suffixIcon,
+    required BuildContext context,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.onSecondary,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2)),

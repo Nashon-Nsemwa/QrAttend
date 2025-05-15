@@ -9,7 +9,6 @@ class SignupStudent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F4FF),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -39,6 +38,7 @@ class SignupStudent extends StatelessWidget {
                     "Registration Number",
                     Icons.school_rounded,
                     (v) => v!.isEmpty ? 'Required' : null,
+                    context,
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -48,6 +48,7 @@ class SignupStudent extends StatelessWidget {
                           controller.courses,
                           "Course",
                           controller.selectedCourse,
+                          context,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -56,6 +57,7 @@ class SignupStudent extends StatelessWidget {
                           controller.years,
                           "Year",
                           controller.selectedYear,
+                          context,
                         ),
                       ),
                     ],
@@ -66,8 +68,9 @@ class SignupStudent extends StatelessWidget {
                     "Authentication Code",
                     Icons.vpn_key,
                     (v) => v!.isEmpty ? 'Required' : null,
+                    context,
                   ),
-                ]),
+                ], context),
 
                 const SizedBox(height: 30),
                 const Text(
@@ -86,6 +89,7 @@ class SignupStudent extends StatelessWidget {
                     "Full Name",
                     Icons.person,
                     (v) => v!.isEmpty ? 'Required' : null,
+                    context,
                   ),
                   const SizedBox(height: 16),
                   _inputField(
@@ -93,6 +97,7 @@ class SignupStudent extends StatelessWidget {
                     "Email",
                     Icons.email,
                     (v) => v!.isEmpty ? 'Required' : null,
+                    context,
                   ),
                   const SizedBox(height: 16),
                   Obx(
@@ -101,9 +106,10 @@ class SignupStudent extends StatelessWidget {
                       "Password",
                       controller.obscurePassword.value,
                       controller.togglePasswordVisibility,
+                      context,
                     ),
                   ),
-                ]),
+                ], context),
 
                 const SizedBox(height: 30),
                 SizedBox(
@@ -153,11 +159,12 @@ class SignupStudent extends StatelessWidget {
     );
   }
 
-  Widget _sectionCard(List<Widget> children) {
+  Widget _sectionCard(List<Widget> children, BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.onSecondary,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
       ),
@@ -173,18 +180,21 @@ class SignupStudent extends StatelessWidget {
     String label,
     IconData icon,
     String? Function(String?) validator,
+    BuildContext context,
   ) {
     return TextFormField(
       cursorColor: Colors.blue,
       controller: controller,
       validator: validator,
+
       decoration: InputDecoration(
         prefixIcon: Padding(
           padding: const EdgeInsets.only(right: 12),
           child: Icon(icon, color: Colors.grey[600]),
         ),
+
         labelText: label,
-        labelStyle: TextStyle(color: Colors.grey[600]),
+        labelStyle: TextStyle(color: Colors.blue),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -199,7 +209,7 @@ class SignupStudent extends StatelessWidget {
           borderSide: BorderSide(color: Colors.blue),
         ),
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor: Theme.of(context).colorScheme.onSecondaryFixedVariant,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -208,7 +218,12 @@ class SignupStudent extends StatelessWidget {
     );
   }
 
-  Widget _dropdown(List<String> items, String hint, RxString selected) {
+  Widget _dropdown(
+    List<String> items,
+    String hint,
+    RxString selected,
+    BuildContext context,
+  ) {
     return Obx(
       () => DropdownButtonFormField<String>(
         isExpanded: true, // This ensures the dropdown takes all available width
@@ -225,7 +240,7 @@ class SignupStudent extends StatelessWidget {
         onChanged: (value) => selected.value = value ?? '',
         decoration: InputDecoration(
           labelText: hint,
-          labelStyle: TextStyle(color: Colors.grey[600]),
+          labelStyle: TextStyle(color: Colors.blue),
           floatingLabelBehavior: FloatingLabelBehavior.always,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
@@ -244,7 +259,7 @@ class SignupStudent extends StatelessWidget {
             child: Icon(Icons.arrow_drop_down, color: Colors.grey),
           ),
           filled: true,
-          fillColor: Colors.grey[50],
+          fillColor: Theme.of(context).colorScheme.onSecondaryFixedVariant,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 14,
@@ -262,6 +277,7 @@ class SignupStudent extends StatelessWidget {
     String label,
     bool isObscured,
     VoidCallback toggle,
+    BuildContext context,
   ) {
     return TextFormField(
       cursorColor: Colors.blue,
@@ -275,7 +291,7 @@ class SignupStudent extends StatelessWidget {
         ),
 
         labelText: label,
-        labelStyle: TextStyle(color: Colors.grey[600]),
+        labelStyle: TextStyle(color: Colors.blue),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -290,7 +306,7 @@ class SignupStudent extends StatelessWidget {
           borderSide: BorderSide(color: Colors.blue),
         ),
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor: Theme.of(context).colorScheme.onSecondaryFixedVariant,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,

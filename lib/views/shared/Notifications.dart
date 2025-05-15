@@ -60,7 +60,7 @@ class Notifications extends StatelessWidget {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: isSelected ? Colors.blue : theme.onPrimary,
+                          color: isSelected ? Colors.blue : Colors.white,
                         ),
                       ),
                       subtitle: Column(

@@ -15,7 +15,7 @@ ThemeData lightmode = ThemeData(
     onPrimaryContainer: Colors.teal, //student role
     onPrimaryFixed: Colors.grey, //svg nav
     onSecondaryFixed: Colors.blue, //appbar
-    onSecondaryFixedVariant: Colors.white,
+    onSecondaryFixedVariant: Colors.grey.shade50, //textfield signup
   ),
 );
 ThemeData darkmode = ThemeData(
@@ -33,6 +33,6 @@ ThemeData darkmode = ThemeData(
     onPrimaryContainer: Colors.teal,
     onPrimaryFixed: Colors.grey,
     onSecondaryFixed: Colors.grey.shade900,
-    onSecondaryFixedVariant: Colors.black,
+    onSecondaryFixedVariant: Colors.grey.shade900,
   ),
 );
