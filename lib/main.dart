@@ -41,7 +41,7 @@ import 'package:qrattend/views/lecturers/SignupLecture.dart';
 import 'package:qrattend/views/lecturers/StudentList.dart';
 import 'package:qrattend/views/lecturers/attendance.dart';
 import 'package:qrattend/views/lecturers/navigation.dart';
-import 'package:qrattend/views/lectures/schedule.dart';
+import 'package:qrattend/views/lecturers/schedule.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
