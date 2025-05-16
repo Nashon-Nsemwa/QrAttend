@@ -32,15 +32,15 @@ import 'package:qrattend/views/students/SigninStudent.dart';
 import 'package:qrattend/views/students/SignupStudent.dart';
 
 // Lecture Views
-import 'package:qrattend/views/lectures/Dashboard.dart';
-import 'package:qrattend/views/lectures/Announcement.dart';
-import 'package:qrattend/views/lectures/GenerateQr.dart';
-import 'package:qrattend/views/lectures/Profile.dart';
-import 'package:qrattend/views/lectures/SigninLecture.dart';
-import 'package:qrattend/views/lectures/SignupLecture.dart';
-import 'package:qrattend/views/lectures/StudentList.dart';
-import 'package:qrattend/views/lectures/attendance.dart';
-import 'package:qrattend/views/lectures/navigation.dart';
+import 'package:qrattend/views/lecturers/Dashboard.dart';
+import 'package:qrattend/views/lecturers/Announcement.dart';
+import 'package:qrattend/views/lecturers/GenerateQr.dart';
+import 'package:qrattend/views/lecturers/Profile.dart';
+import 'package:qrattend/views/lecturers/SigninLecture.dart';
+import 'package:qrattend/views/lecturers/SignupLecture.dart';
+import 'package:qrattend/views/lecturers/StudentList.dart';
+import 'package:qrattend/views/lecturers/attendance.dart';
+import 'package:qrattend/views/lecturers/navigation.dart';
 import 'package:qrattend/views/lectures/schedule.dart';
 
 void main() async {

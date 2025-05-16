@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:qrattend/controllers/Lecture/NavigationControler.dart';
-import 'package:qrattend/views/lectures/Dashboard.dart';
+import 'package:qrattend/views/lecturers/Dashboard.dart';
 import 'package:qrattend/views/shared/Notifications.dart';
 import 'package:qrattend/views/shared/Settings.dart';
 
