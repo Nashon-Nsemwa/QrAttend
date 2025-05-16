@@ -16,6 +16,7 @@ ThemeData lightmode = ThemeData(
     onPrimaryFixed: Colors.grey, //svg nav
     onSecondaryFixed: Colors.blue, //appbar
     onSecondaryFixedVariant: Colors.grey.shade50, //textfield signup
+    onSurfaceVariant: Colors.black, //notification text
   ),
 );
 ThemeData darkmode = ThemeData(
@@ -34,5 +35,6 @@ ThemeData darkmode = ThemeData(
     onPrimaryFixed: Colors.grey,
     onSecondaryFixed: Colors.grey.shade900,
     onSecondaryFixedVariant: Colors.grey.shade900,
+    onSurfaceVariant: Colors.white, //notification text
   ),
 );
