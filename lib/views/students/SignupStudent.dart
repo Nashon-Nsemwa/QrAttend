@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qrattend/controllers/Student/SignupStudentController.dart';
+import 'package:qrattend/utils/SearchableDropdown.dart';
 
 class SignupStudent extends StatelessWidget {
   SignupStudent({super.key});
@@ -41,33 +42,24 @@ class SignupStudent extends StatelessWidget {
                     context,
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _dropdown(
-                          controller.courses,
-                          "Course",
-                          controller.selectedCourse,
-                          context,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _dropdown(
-                          controller.years,
-                          "Year",
-                          controller.selectedYear,
-                          context,
-                        ),
-                      ),
-                    ],
+
+                  SearchableDropdown(
+                    items: controller.courses,
+                    label: "Course",
+                    selected: controller.selectedCourse,
+                    validator:
+                        (value) =>
+                            value == null || value.isEmpty
+                                ? 'Please select a course'
+                                : null,
                   ),
+
                   const SizedBox(height: 16),
-                  _inputField(
-                    controller.authCode,
-                    "Authentication Code",
-                    Icons.vpn_key,
-                    (v) => v!.isEmpty ? 'Required' : null,
+
+                  _dropdown(
+                    controller.years,
+                    "Year",
+                    controller.selectedYear,
                     context,
                   ),
                 ], context),

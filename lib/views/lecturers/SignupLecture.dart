@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qrattend/controllers/Lecture/SignupLectureController.dart';
+import 'package:qrattend/utils/SearchableDropdown.dart';
 
 class SignupLecture extends StatelessWidget {
   SignupLecture({super.key});
@@ -41,19 +42,15 @@ class SignupLecture extends StatelessWidget {
                     context,
                   ),
                   const SizedBox(height: 16),
-                  _dropdown(
-                    controller.departments,
-                    "Department",
-                    controller.selectedDepartment,
-                    context,
-                  ),
-                  const SizedBox(height: 16),
-                  _inputField(
-                    controller.authCode,
-                    "Authentication Code",
-                    Icons.vpn_key,
-                    (v) => v!.isEmpty ? 'Required' : null,
-                    context,
+                  SearchableDropdown(
+                    items: controller.departments,
+                    label: "Department",
+                    selected: controller.selectedDepartment,
+                    validator:
+                        (value) =>
+                            value == null || value.isEmpty
+                                ? 'Please select a course'
+                                : null,
                   ),
                 ], context),
 
@@ -196,60 +193,6 @@ class SignupLecture extends StatelessWidget {
           horizontal: 16,
           vertical: 14,
         ),
-      ),
-    );
-  }
-
-  Widget _dropdown(
-    List<String> items,
-    String hint,
-    RxString selected,
-    BuildContext context,
-  ) {
-    return Obx(
-      () => DropdownButtonFormField<String>(
-        isExpanded: true,
-        value: selected.value.isEmpty ? null : selected.value,
-        items:
-            items
-                .map(
-                  (item) => DropdownMenuItem(
-                    value: item,
-                    child: Text(item, overflow: TextOverflow.ellipsis),
-                  ),
-                )
-                .toList(),
-        onChanged: (value) => selected.value = value ?? '',
-        decoration: InputDecoration(
-          labelText: hint,
-          labelStyle: TextStyle(color: Colors.blue),
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.grey[300]!),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.grey[300]!),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Colors.blue),
-          ),
-          prefixIcon: const Padding(
-            padding: EdgeInsets.only(right: 12),
-            child: Icon(Icons.arrow_drop_down, color: Colors.grey),
-          ),
-          filled: true,
-          fillColor: Theme.of(context).colorScheme.onSecondaryFixedVariant,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
-        ),
-        validator:
-            (value) =>
-                value == null || value.isEmpty ? 'Please select $hint' : null,
       ),
     );
   }

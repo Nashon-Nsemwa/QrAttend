@@ -49,6 +49,7 @@ dependencies:
   path_provider: ^2.1.5
   about: ^2.2.0
   geolocator: ^14.0.0
+  dropdown_search: ^6.0.2
 
  
 

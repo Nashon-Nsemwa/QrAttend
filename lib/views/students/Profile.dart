@@ -276,7 +276,12 @@ class ProfileStudent extends StatelessWidget {
                                       () =>
                                           controller.showDeleteConfirm.value =
                                               false,
-                                  child: Text("Cancel"),
+                                  child: Text(
+                                    "Cancel",
+                                    style: TextStyle(
+                                      color: theme.onSurfaceVariant,
+                                    ),
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 12),
