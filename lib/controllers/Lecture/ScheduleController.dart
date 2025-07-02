@@ -15,7 +15,7 @@ class LectureScheduleController extends GetxController {
   }
 
   // The course value is the the first course in the list it is selected automatic
-  // Fetch courses taught by the lecture
+  // Fetch courses taught by the lecturer
   void fetchCourses() {
     courses.assignAll(["Cryptography", "Networking", "Database"]);
     selectedCourse.value = courses.first; // Set default course
@@ -31,21 +31,18 @@ class LectureScheduleController extends GetxController {
             subject: "Introduction to Cryptography",
             time: "08:00 - 09:30",
             venue: "Room 201",
-            lecturer: "Dr. Nashon",
           ),
           ScheduleItem(
             type: "lecture",
             subject: "Hash Functions",
             time: "10:00 - 11:30",
             venue: "Room 202",
-            lecturer: "Dr. Nashon",
           ),
           ScheduleItem(
             type: "Break",
             subject: "Short Break",
             time: "10:00 - 11:30",
             venue: "",
-            lecturer: "",
           ),
         ],
         "Tuesday": [
@@ -54,7 +51,6 @@ class LectureScheduleController extends GetxController {
             subject: "Public Key Cryptography",
             time: "08:00 - 09:30",
             venue: "Room 201",
-            lecturer: "Dr. Nashon",
           ),
         ],
       },
@@ -65,7 +61,6 @@ class LectureScheduleController extends GetxController {
             subject: "Network Security",
             time: "12:00 - 13:30",
             venue: "Room 305",
-            lecturer: "Dr. Smith",
           ),
         ],
         "Tuesday": [
@@ -74,7 +69,6 @@ class LectureScheduleController extends GetxController {
             subject: "TCP/IP Protocols",
             time: "10:00 - 11:30",
             venue: "Room 307",
-            lecturer: "Dr. Smith",
           ),
         ],
       },

@@ -185,8 +185,6 @@ class LectureSchedule extends StatelessWidget {
                                       ),
                                       Text("Time: ${item.time}"),
                                       Text("Venue: ${item.venue}"),
-                                      if (item.lecturer.isNotEmpty)
-                                        Text("Lecturer: ${item.lecturer}"),
                                     ],
                                   ),
                                 ),
