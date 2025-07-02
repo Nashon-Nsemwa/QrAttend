@@ -1,6 +1,12 @@
 import 'package:get/get.dart';
 import 'package:qrattend/models/Schedule.dart';
 
+class CourseYear {
+  final String name;
+  final String year;
+  CourseYear({required this.name, required this.year});
+}
+
 class LectureScheduleController extends GetxController {
   var selectedCourse = ''.obs;
   var selectedDay = "Monday".obs;
@@ -14,17 +20,27 @@ class LectureScheduleController extends GetxController {
     fetchSchedule();
   }
 
-  // The course value is the the first course in the list it is selected automatic
-  // Fetch courses taught by the lecturer
+  // Fetch courses taught by the lecturer, with year
   void fetchCourses() {
-    courses.assignAll(["Cryptography", "Networking", "Database"]);
+    // Example: fetched from API or database
+    final courseYearList = [
+      CourseYear(name: "ComputerScience", year: "1"),
+      CourseYear(name: "Networking", year: "1"),
+      CourseYear(name: "Networking", year: "2"),
+      CourseYear(name: "Database", year: "1"),
+    ];
+
+    // Concatenate course name and year
+    courses.assignAll(
+      courseYearList.map((c) => "${c.name} ${c.year}").toList(),
+    );
     selectedCourse.value = courses.first; // Set default course
   }
 
   // Fetch schedule for all courses
   void fetchSchedule() {
     schedules.value = {
-      "Cryptography": {
+      "ComputerScience 1": {
         "Monday": [
           ScheduleItem(
             type: "lecture",
@@ -54,7 +70,7 @@ class LectureScheduleController extends GetxController {
           ),
         ],
       },
-      "Networking": {
+      "Networking 1": {
         "Monday": [
           ScheduleItem(
             type: "lecture",
