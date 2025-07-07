@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -9,6 +10,7 @@ import 'package:qrattend/config/theme.dart';
 
 import 'package:qrattend/controllers/Shared/UserSessionController.dart';
 import 'package:qrattend/controllers/Shared/ThemeController.dart'; //
+import 'package:qrattend/firebase_options.dart';
 import 'package:qrattend/views/shared/PrivacyPolicy.dart';
 import 'package:qrattend/views/shared/TermsConidtion.dart';
 
@@ -45,6 +47,7 @@ import 'package:qrattend/views/lecturers/schedule.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await GetStorage.init();
 
   Get.put(UserSessionController());
