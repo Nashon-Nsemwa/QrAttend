@@ -56,3 +56,7 @@ README.md
 /test/
 /web/
 /windows/
+
+#firebase config files
+lib/firebase_options
+firebase.json

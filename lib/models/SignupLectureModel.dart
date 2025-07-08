@@ -4,7 +4,8 @@ class LectureModel {
   final String lectureId;
   final String department;
   final String password;
-  final String authCode;
+  final List<String> courses;
+  final List<String> modules;
 
   LectureModel({
     required this.name,
@@ -12,17 +13,31 @@ class LectureModel {
     required this.lectureId,
     required this.department,
     required this.password,
-    required this.authCode,
+    this.courses = const [],
+    this.modules = const [],
   });
 
-  Map<String, dynamic> toJson() {
+  factory LectureModel.fromMap(Map<String, dynamic> data) {
+    final details = data['details'] ?? {};
+    return LectureModel(
+      name: data['name'] ?? '',
+      email: data['email'] ?? '',
+      lectureId: data['lectureId'] ?? '',
+      department: data['department'] ?? '',
+      password: data['password'] ?? '',
+      courses: List<String>.from(details['courses'] ?? []),
+      modules: List<String>.from(details['modules'] ?? []),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
     return {
       'name': name,
       'email': email,
       'lectureId': lectureId,
       'department': department,
       'password': password,
-      'authCode': authCode,
+      'details': {'courses': courses, 'modules': modules},
     };
   }
 }
