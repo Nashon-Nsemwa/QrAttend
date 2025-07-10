@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore
 import 'package:qrattend/models/GenerateQrCodeData.dart';
 
 class GenerateQrController extends GetxController {
@@ -28,6 +29,8 @@ class GenerateQrController extends GetxController {
 
   Rxn<Position> fetchedPosition = Rxn<Position>();
 
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
   @override
   void onInit() {
     super.onInit();
@@ -36,7 +39,6 @@ class GenerateQrController extends GetxController {
     loadQRsFromStorage();
     startCountdown();
 
-    // Fetch location in the background
     _getCurrentLocation()
         .then((pos) {
           fetchedPosition.value = pos;
@@ -46,21 +48,29 @@ class GenerateQrController extends GetxController {
         });
   }
 
+  // Fetch courses/modules from Firestore where lecturer == "Mr Nsemwa"
   Future<void> fetchCourseModulePairs() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    coursesWithModules.value = {
-      'Computer Science': ['Database Management', 'Web-based DB', 'Networking'],
-      'Information Technology': [
-        'Cybersecurity',
-        'Cloud Computing',
-        'AI Basics',
-      ],
-      'Software Engineering': [
-        'Mobile Development',
-        'Backend Systems',
-        'Testing Strategies',
-      ],
-    };
+    Map<String, List<String>> courseModules = {};
+
+    QuerySnapshot coursesSnapshot = await firestore.collection('courses').get();
+    for (var courseDoc in coursesSnapshot.docs) {
+      var modulesSnapshot =
+          await firestore
+              .collection('courses')
+              .doc(courseDoc.id)
+              .collection('modules')
+              .where('lecturer', isEqualTo: 'Mr Nsemwa')
+              .get();
+
+      if (modulesSnapshot.docs.isNotEmpty) {
+        courseModules[courseDoc['name']] =
+            modulesSnapshot.docs
+                .map((moduleDoc) => moduleDoc['name'].toString())
+                .toList();
+      }
+    }
+
+    coursesWithModules.value = courseModules;
   }
 
   Future<void> fetchDurations() async {
@@ -125,9 +135,7 @@ class GenerateQrController extends GetxController {
     try {
       Position position;
 
-      // Check if background location was fetched
       if (fetchedPosition.value == null) {
-        // Try fetching again with a timeout
         position = await _getCurrentLocation().timeout(
           Duration(seconds: 10),
           onTimeout: () {
@@ -140,7 +148,7 @@ class GenerateQrController extends GetxController {
             throw Exception("Fetching location timed out.");
           },
         );
-        fetchedPosition.value = position; // store it
+        fetchedPosition.value = position;
       } else {
         position = fetchedPosition.value!;
       }
@@ -167,6 +175,7 @@ class GenerateQrController extends GetxController {
         longitude: position.longitude,
       );
 
+      // Save QR locally only
       saveQRCodeToStorage(qrCode);
       expirationTime.value = newExpirationTime;
 
@@ -181,10 +190,74 @@ class GenerateQrController extends GetxController {
         'longitude': position.longitude,
       });
 
+      // --- Firestore attendance doc creation/update ---
+
+      // Find course document ID by course name
+      QuerySnapshot coursesSnapshot =
+          await firestore
+              .collection('courses')
+              .where('name', isEqualTo: course)
+              .get();
+
+      if (coursesSnapshot.docs.isEmpty) {
+        throw Exception("Course document not found");
+      }
+
+      final courseDocId = coursesSnapshot.docs.first.id;
+
+      // Find module document ID by module name under course
+      QuerySnapshot modulesSnapshot =
+          await firestore
+              .collection('courses')
+              .doc(courseDocId)
+              .collection('modules')
+              .where('name', isEqualTo: module)
+              .where('lecturer', isEqualTo: 'Mr Nsemwa')
+              .get();
+
+      if (modulesSnapshot.docs.isEmpty) {
+        throw Exception("Module document not found");
+      }
+
+      final moduleDocId = modulesSnapshot.docs.first.id;
+
+      // Attendance document ID based on date (e.g., "att_YYYYMMDD")
+      final todayStr = getFormattedDate().replaceAll('-', '');
+      final attendanceDocId = "att_$todayStr";
+
+      final attendanceDocRef = firestore
+          .collection('courses')
+          .doc(courseDocId)
+          .collection('modules')
+          .doc(moduleDocId)
+          .collection('attendance')
+          .doc(attendanceDocId);
+
+      // Run transaction to create or update attendance doc atomically
+      await firestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(attendanceDocRef);
+
+        if (!snapshot.exists) {
+          // Create new attendance doc
+          transaction.set(attendanceDocRef, {
+            'createdOn': Timestamp.now(),
+            'totalclasses': 1,
+            'createdBy': 'Mr Nsemwa',
+            'students': {}, // empty map initially
+          });
+        } else {
+          // Increment totalclasses by 1
+          int currentTotal = snapshot.get('totalclasses') ?? 0;
+          transaction.update(attendanceDocRef, {
+            'totalclasses': currentTotal + 1,
+          });
+        }
+      });
+
       startCountdown();
     } catch (e) {
       Get.snackbar(
-        "Location Error",
+        "Error",
         e.toString(),
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -243,6 +316,7 @@ class GenerateQrController extends GetxController {
   }
 
   String getFormattedDate() {
+    // Returns YYYY-MM-DD
     return DateTime.now().toLocal().toString().split(' ')[0];
   }
 

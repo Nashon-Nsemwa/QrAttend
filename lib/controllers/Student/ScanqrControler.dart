@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:qrattend/utils/CustomeScandialog.dart';
 
 class QRScanController extends GetxController {
@@ -16,18 +17,17 @@ class QRScanController extends GetxController {
   var isImagePickerActive = false.obs;
   var isQRCodeScanned = false.obs;
 
-  /// Toggles flashlight on/off
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
   void toggleFlash() {
     isFlashOn.value = !isFlashOn.value;
     scannerController.toggleTorch();
   }
 
-  /// Switches between front and back camera
   void switchCamera() {
     scannerController.switchCamera();
   }
 
-  /// Handles QR code scanning from live camera
   void handleQRScan(BarcodeCapture capture) async {
     final barcodes = capture.barcodes;
 
@@ -38,64 +38,154 @@ class QRScanController extends GetxController {
         isQRCodeScanned.value = true;
 
         try {
-          if (scannedCode == null) {
-            throw Exception("QR Code content is empty.");
-          }
+          if (scannedCode == null) throw Exception("QR Code is empty");
 
           final qrData = jsonDecode(scannedCode);
+          final String course = qrData['course'];
+          final String module = qrData['module'];
+          final DateTime expiration = DateTime.parse(qrData['expirationTime']);
           final double qrLatitude = qrData['latitude'];
           final double qrLongitude = qrData['longitude'];
 
           ScanDialog.showLoading();
 
+          if (DateTime.now().isAfter(expiration)) {
+            throw Exception("This QR Code has expired.");
+          }
+
           final position = await Geolocator.getCurrentPosition(
             locationSettings: locationSettings,
           ).timeout(
             const Duration(seconds: 10),
-            onTimeout: () {
-              throw Exception(
-                "Unable to get location. Please check your GPS settings.",
-              );
-            },
+            onTimeout:
+                () =>
+                    throw Exception(
+                      "Unable to get location. Please check your GPS.",
+                    ),
           );
 
-          double distanceInMeters = Geolocator.distanceBetween(
+          final distance = Geolocator.distanceBetween(
             qrLatitude,
             qrLongitude,
             position.latitude,
             position.longitude,
           );
 
-          if (distanceInMeters <= 100) {
-            ScanDialog.showResult(
-              success: true,
-              message:
-                  "You're within ${distanceInMeters.toStringAsFixed(2)} meters. Attendance marked!",
-            );
-            // TODO: Add your logic here to mark attendance or navigate to another page
-          } else {
-            ScanDialog.showResult(
-              success: false,
-              message:
-                  "You're ${distanceInMeters.toStringAsFixed(2)} meters away. Please move closer to the QR point.",
+          if (distance > 100) {
+            throw Exception(
+              "You are ${distance.toStringAsFixed(2)} meters away. Please move closer.",
             );
           }
+
+          final studentQuery =
+              await firestore
+                  .collection('students')
+                  .where('name', isEqualTo: 'Nelson Nsemwa')
+                  .limit(1)
+                  .get();
+
+          if (studentQuery.docs.isEmpty) {
+            throw Exception("Student 'Nelson Nsemwa' not found.");
+          }
+
+          final studentDoc = studentQuery.docs.first;
+          final studentId = studentDoc.id;
+          final studentName = studentDoc['name'];
+          final studentCourse = studentDoc['course'];
+
+          if (studentCourse != course) {
+            throw Exception("You are not registered in the course '$course'.");
+          }
+
+          final courseQuery =
+              await firestore
+                  .collection('courses')
+                  .where('name', isEqualTo: course)
+                  .limit(1)
+                  .get();
+          if (courseQuery.docs.isEmpty) {
+            throw Exception("Course '$course' not found.");
+          }
+
+          final courseDoc = courseQuery.docs.first;
+
+          final moduleQuery =
+              await courseDoc.reference
+                  .collection('modules')
+                  .where('name', isEqualTo: module)
+                  .limit(1)
+                  .get();
+
+          if (moduleQuery.docs.isEmpty) {
+            throw Exception(
+              "Module '$module' not found under course '$course'.",
+            );
+          }
+
+          final moduleDoc = moduleQuery.docs.first;
+
+          final attendanceCollection = moduleDoc.reference.collection(
+            'attendance',
+          );
+          final attendanceQuery =
+              await attendanceCollection
+                  .orderBy('createdOn', descending: true)
+                  .limit(1)
+                  .get();
+
+          if (attendanceQuery.docs.isEmpty) {
+            throw Exception("Attendance session has not been opened yet.");
+          }
+
+          final attendanceDoc = attendanceQuery.docs.first;
+          final attendanceRef = attendanceDoc.reference;
+
+          final attendanceData = attendanceDoc.data();
+          final Map<String, dynamic> studentsMap = Map<String, dynamic>.from(
+            attendanceData['students'] ?? {},
+          );
+
+          int attended = 1;
+          if (studentsMap.containsKey(studentId)) {
+            attended = (studentsMap[studentId]['attended'] ?? 0) + 1;
+          }
+
+          final totalClasses = attendanceData['totalclasses'] ?? 1;
+          final percentage = (attended / totalClasses) * 100;
+
+          await attendanceRef.set({
+            'students.$studentId': {
+              'name': studentName,
+              'attended': attended,
+              'percentage': percentage,
+              'lastUpdated': FieldValue.serverTimestamp(),
+            },
+          }, SetOptions(merge: true));
+
+          ScanDialog.showResult(
+            success: true,
+            message:
+                "You're within ${distance.toStringAsFixed(2)} meters. Attendance marked!",
+          );
         } catch (e) {
-          String friendlyMessage =
-              "Invalid QR Code. Please try a valid QR Code.";
+          String msg = "Something went wrong. Please try again.";
+          final err = e.toString();
 
-          if (e.toString().contains("FormatException")) {
-            friendlyMessage =
-                "Invalid QR Code format. Please try a valid QR Code.";
-          } else if (e.toString().contains("location") ||
-              e.toString().contains("GPS")) {
-            friendlyMessage =
-                "Failed to get location. Please ensure GPS is enabled.";
-          } else if (e.toString().contains("empty")) {
-            friendlyMessage = "The scanned QR code doesn't contain valid data.";
+          if (err.contains("expired")) {
+            msg = "The QR code has expired.";
+          } else if (err.contains("location") || err.contains("GPS")) {
+            msg = "Failed to get your location.";
+          } else if (err.contains("not found")) {
+            msg = err;
+          } else if (err.contains("closer")) {
+            msg = err;
+          } else if (err.contains("course") || err.contains("module")) {
+            msg = err;
+          } else if (err.contains("Attendance session has not been opened")) {
+            msg = err;
           }
 
-          ScanDialog.showResult(success: false, message: friendlyMessage);
+          ScanDialog.showResult(success: false, message: msg);
         }
 
         Future.delayed(const Duration(seconds: 2), () {
@@ -109,7 +199,6 @@ class QRScanController extends GetxController {
     }
   }
 
-  /// Optional: Pick image from gallery and scan QR from it
   Future<void> pickImageFromGallery() async {
     if (isImagePickerActive.value) {
       Get.snackbar("Notice", "Image picker is already in use.");
@@ -120,15 +209,11 @@ class QRScanController extends GetxController {
 
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-
       if (image != null) {
         final capture = await scannerController.analyzeImage(image.path);
         final barcodes = capture?.barcodes;
-
         if (barcodes != null && barcodes.isNotEmpty) {
-          handleQRScan(capture!); // Reusing main logic
-          // TODO: Add logic here to process the QR code and handle the backend processing
-          // For example, you can send the scanned QR data to the backend to log attendance
+          handleQRScan(capture!);
         } else {
           ScanDialog.showResult(
             success: false,
@@ -139,8 +224,7 @@ class QRScanController extends GetxController {
     } catch (e) {
       ScanDialog.showResult(
         success: false,
-        message:
-            "Failed to process image. Please try again or choose another image.",
+        message: "Failed to process image. Try again.",
       );
     } finally {
       isImagePickerActive.value = false;
