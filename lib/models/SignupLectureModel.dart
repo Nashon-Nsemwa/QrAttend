@@ -3,7 +3,6 @@ class LectureModel {
   final String email;
   final String lectureId;
   final String department;
-  final String password;
   final List<String> courses;
   final List<String> modules;
 
@@ -12,7 +11,6 @@ class LectureModel {
     required this.email,
     required this.lectureId,
     required this.department,
-    required this.password,
     this.courses = const [],
     this.modules = const [],
   });
@@ -24,7 +22,6 @@ class LectureModel {
       email: data['email'] ?? '',
       lectureId: data['lectureId'] ?? '',
       department: data['department'] ?? '',
-      password: data['password'] ?? '',
       courses: List<String>.from(details['courses'] ?? []),
       modules: List<String>.from(details['modules'] ?? []),
     );
@@ -36,7 +33,6 @@ class LectureModel {
       'email': email,
       'lectureId': lectureId,
       'department': department,
-      'password': password,
       'details': {'courses': courses, 'modules': modules},
     };
   }

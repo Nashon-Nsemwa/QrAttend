@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qrattend/controllers/Shared/SignOutController.dart';
 import 'package:qrattend/controllers/Shared/ThemeController.dart';
 import 'package:qrattend/controllers/Shared/UserSessionController.dart';
 
@@ -8,6 +9,7 @@ class Settings extends StatelessWidget {
   final UserSessionController sessionController =
       Get.find<UserSessionController>();
   final ThemeController themeController = Get.put(ThemeController());
+  final Signoutcontroller _signOut = Get.put(Signoutcontroller());
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +39,7 @@ class Settings extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   color: theme.onSecondary,
-                  borderRadius: BorderRadius.circular(
-                    16,
-                  ), // Adjust the radius as needed
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,11 +72,9 @@ class Settings extends StatelessWidget {
                           confirmTextColor: Colors.white,
                           buttonColor: Colors.redAccent,
                           onConfirm: () {
+                            _signOut.signOutUser();
                             sessionController
                                 .clearSession(); // Clears session or token
-                            Get.offAllNamed(
-                              "/",
-                            ); // Redirect to login or welcome
                           },
                         );
                       },

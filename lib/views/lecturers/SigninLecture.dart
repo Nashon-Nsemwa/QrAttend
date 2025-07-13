@@ -61,7 +61,9 @@ class SigninLecture extends StatelessWidget {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        controller.resetPassword();
+                      },
                       child: const Text(
                         "Forgot Password?",
                         style: TextStyle(color: Colors.blue),

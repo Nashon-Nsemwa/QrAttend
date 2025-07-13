@@ -61,7 +61,9 @@ class SigninStudent extends StatelessWidget {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        controller.forgotPassword();
+                      },
                       child: const Text(
                         "Forgot Password?",
                         style: TextStyle(color: Colors.blue),

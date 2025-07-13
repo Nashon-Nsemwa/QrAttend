@@ -4,7 +4,6 @@ class StudentModel {
   final String year;
   final String name;
   final String email;
-  final String password;
 
   StudentModel({
     required this.registrationNumber,
@@ -12,7 +11,6 @@ class StudentModel {
     required this.year,
     required this.name,
     required this.email,
-    required this.password,
   });
 
   Map<String, dynamic> toMap() {
@@ -22,7 +20,6 @@ class StudentModel {
       "year": year,
       "name": name,
       "email": email,
-      "password": password,
     };
   }
 
@@ -33,7 +30,6 @@ class StudentModel {
       year: data['year'],
       name: data['name'],
       email: data['email'],
-      password: data['password'],
     );
   }
 }

@@ -1,27 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import '../../models/SignupLectureModel.dart';
+import '../../utils/showAlert.dart';
 
 class SignupLectureController extends GetxController {
   final formKey = GlobalKey<FormState>();
 
-  // Text Controllers
   final name = TextEditingController();
   final email = TextEditingController();
   final lectureId = TextEditingController();
   final password = TextEditingController();
   final confirmPassword = TextEditingController();
 
-  // Dropdown
   var selectedDepartment = ''.obs;
   var departments = <String>[].obs;
 
-  // Password visibility
   var obscurePassword = true.obs;
   var obscureConfirmPassword = true.obs;
+  var isLoading = false.obs;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final box = GetStorage();
 
   @override
   void onInit() {
@@ -29,16 +32,12 @@ class SignupLectureController extends GetxController {
     fetchDepartments();
   }
 
-  /// 🔄 Fetch departments from Firestore
   void fetchDepartments() {
     _firestore.collection('departments').snapshots().listen((snapshot) {
       departments.value =
           snapshot.docs
               .map((doc) => doc.data()['name'])
-              .where(
-                (name) => name != null && name is String && name.isNotEmpty,
-              )
-              .cast<String>()
+              .whereType<String>()
               .toList();
     });
   }
@@ -49,42 +48,90 @@ class SignupLectureController extends GetxController {
   void toggleConfirmPasswordVisibility() =>
       obscureConfirmPassword.value = !obscureConfirmPassword.value;
 
-  /// ✅ Submit and save lecture to Firestore
+  void showLoadingDialog() {
+    Get.dialog(
+      const Center(child: CircularProgressIndicator()),
+      barrierDismissible: false,
+    );
+  }
+
   Future<void> submitForm() async {
     if (!formKey.currentState!.validate()) return;
 
+    final id = lectureId.text.trim();
+    final mail = email.text.trim();
+
     try {
-      // Check if lecture already exists
-      final existing =
+      isLoading.value = true;
+      showLoadingDialog(); // Show loading spinner
+
+      // Check if lecture ID already exists
+      final idCheck =
           await _firestore
               .collection('lectures')
-              .where('lectureId', isEqualTo: lectureId.text.trim())
+              .where('lectureId', isEqualTo: id)
               .get();
 
-      if (existing.docs.isNotEmpty) {
-        Get.snackbar("Error", "Lecture ID already exists");
+      if (idCheck.docs.isNotEmpty) {
+        Get.back(); // Close loading dialog
+        showAlert("Error", "Lecture ID already exists", Colors.red);
         return;
       }
 
-      final lecture = LectureModel(
-        name: name.text.trim(),
-        email: email.text.trim(),
-        lectureId: lectureId.text.trim(),
-        department: selectedDepartment.value,
+      // Check if email already used
+      final emailCheck =
+          await _firestore
+              .collection('lectures')
+              .where('email', isEqualTo: mail)
+              .get();
+
+      if (emailCheck.docs.isNotEmpty) {
+        Get.back(); // Close loading dialog
+        showAlert(
+          "Error",
+          "Email already used for another lecture",
+          Colors.red,
+        );
+        return;
+      }
+
+      // Create Firebase Auth user
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: mail,
         password: password.text.trim(),
       );
 
-      // Let Firestore generate the document ID automatically
-      await _firestore.collection('lectures').add(lecture.toMap());
+      // Create Firestore document
+      final lecture = LectureModel(
+        name: name.text.trim(),
+        email: mail,
+        lectureId: id,
+        department: selectedDepartment.value,
+      );
 
-      Get.snackbar("Success", "Signed up as ${lecture.name}");
+      await _firestore
+          .collection('lectures')
+          .doc(userCredential.user!.uid)
+          .set(lecture.toMap());
+
+      // Save role locally
+      box.write('role', 'lecture');
+
+      Get.back(); // Close loading dialog
+
+      showAlert("Success", "Signed up as ${lecture.name}", Colors.green);
 
       Future.delayed(const Duration(seconds: 1), () {
-        Get.offNamed('/Signin_Student'); // Replace if needed
+        Get.offNamed('/LectureNavigation');
       });
+    } on FirebaseAuthException catch (e) {
+      Get.back(); // Close loading dialog
+      showAlert("Error", e.message ?? "Authentication failed", Colors.red);
     } catch (e) {
-      Get.snackbar("Error", "Failed to sign up: $e");
-      print("$e");
+      Get.back(); // Close loading dialog
+      showAlert("Error", "Unexpected error: $e", Colors.red);
+    } finally {
+      isLoading.value = false;
     }
   }
 

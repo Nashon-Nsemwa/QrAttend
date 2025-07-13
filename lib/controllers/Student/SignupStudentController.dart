@@ -1,30 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import '../../models/SignupStudentModel.dart';
+
+import '../../utils/showAlert.dart'; // ✅ Import your reusable alert
 
 class SignupStudentController extends GetxController {
   final formKey = GlobalKey<FormState>();
 
-  // Controllers
   final registrationNumber = TextEditingController();
   final name = TextEditingController();
   final email = TextEditingController();
   final password = TextEditingController();
   final confirmPassword = TextEditingController();
 
-  // Dropdown selections
   var selectedCourse = ''.obs;
   var selectedYear = ''.obs;
 
-  // Dynamic lists
   var courses = <String>[].obs;
   var years = <String>[].obs;
 
-  // Firebase
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Password visibility
   var obscurePassword = true.obs;
   var obscureConfirmPassword = true.obs;
 
@@ -32,11 +32,13 @@ class SignupStudentController extends GetxController {
   void onInit() {
     super.onInit();
     fetchCourses();
-    // Listen for course change to fetch years
-    ever(selectedCourse, (_) => fetchYearsForCourse());
+    // Reset selectedYear when selectedCourse changes
+    ever(selectedCourse, (_) {
+      selectedYear.value = ''; // Clear selected year
+      fetchYearsForCourse(); // Reload year list
+    });
   }
 
-  /// 🔄 Fetch course names from Firestore
   void fetchCourses() {
     _firestore.collection('courses').snapshots().listen((snapshot) {
       courses.value =
@@ -44,9 +46,9 @@ class SignupStudentController extends GetxController {
     });
   }
 
-  /// 🔄 Fetch dynamic years based on selected course
   Future<void> fetchYearsForCourse() async {
     if (selectedCourse.value.isEmpty) return;
+
     final query =
         await _firestore
             .collection('courses')
@@ -54,15 +56,13 @@ class SignupStudentController extends GetxController {
             .get();
 
     if (query.docs.isNotEmpty) {
-      final year = query.docs.first['year']; // Example: "Year 3"
-      final yearList = _parseYearRange(year);
-      years.value = yearList;
+      final year = query.docs.first['year'];
+      years.value = _parseYearRange(year);
     } else {
       years.clear();
     }
   }
 
-  /// 🧠 Parse "Year 3" → ['Year 1', 'Year 2', 'Year 3']
   List<String> _parseYearRange(String yearString) {
     final match = RegExp(r'Year (\d+)').firstMatch(yearString);
     if (match != null) {
@@ -72,43 +72,86 @@ class SignupStudentController extends GetxController {
     return [];
   }
 
-  /// ✅ Save student to Firebase
+  void togglePasswordVisibility() =>
+      obscurePassword.value = !obscurePassword.value;
+  void toggleConfirmPasswordVisibility() =>
+      obscureConfirmPassword.value = !obscureConfirmPassword.value;
+
+  void _showLoading() {
+    Get.dialog(
+      const Center(child: CircularProgressIndicator()),
+      barrierDismissible: false,
+    );
+  }
+
+  void _hideLoading() {
+    if (Get.isDialogOpen ?? false) Get.back();
+  }
+
   Future<void> submitForm() async {
     if (!formKey.currentState!.validate()) return;
 
+    final regNo = registrationNumber.text.trim();
+    final emailText = email.text.trim();
+
+    _showLoading();
+
     try {
-      // Check for duplicate registration number
       final existing =
           await _firestore
               .collection('students')
-              .where(
-                'registrationNumber',
-                isEqualTo: registrationNumber.text.trim(),
-              )
+              .where('registrationNumber', isEqualTo: regNo)
+              .get();
+
+      final emailExists =
+          await _firestore
+              .collection('students')
+              .where('email', isEqualTo: emailText)
               .get();
 
       if (existing.docs.isNotEmpty) {
-        Get.snackbar("Error", "Registration number already exists");
+        _hideLoading();
+        showAlert("Error", "Registration number already exists", Colors.red);
         return;
       }
 
-      final student = StudentModel(
-        registrationNumber: registrationNumber.text.trim(),
-        name: name.text.trim(),
-        email: email.text.trim(),
-        course: selectedCourse.value,
-        year: selectedYear.value,
+      if (emailExists.docs.isNotEmpty) {
+        _hideLoading();
+        showAlert("Error", "Email already exists", Colors.red);
+        return;
+      }
+
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: emailText,
         password: password.text.trim(),
       );
 
-      await _firestore.collection('students').add(student.toMap());
+      final student = StudentModel(
+        registrationNumber: regNo,
+        name: name.text.trim(),
+        email: emailText,
+        course: selectedCourse.value,
+        year: selectedYear.value,
+      );
 
-      Get.snackbar("Success", "Signed up as ${student.name}");
-      Future.delayed(const Duration(seconds: 1), () {
-        Get.offNamed('/Signin_Student');
-      });
+      await _firestore
+          .collection('students')
+          .doc(userCredential.user!.uid)
+          .set(student.toMap());
+
+      final box = GetStorage();
+      box.write('role', 'student');
+
+      _hideLoading();
+      showAlert("Success", "Signed up as ${student.name}", Colors.green);
+
+      Get.offAllNamed('/');
+    } on FirebaseAuthException catch (e) {
+      _hideLoading();
+      showAlert("Auth Error", e.message ?? "Something went wrong", Colors.red);
     } catch (e) {
-      Get.snackbar("Error", "Signup failed: $e");
+      _hideLoading();
+      showAlert("Error", "Signup failed: $e", Colors.red);
     }
   }
 
@@ -121,10 +164,4 @@ class SignupStudentController extends GetxController {
     confirmPassword.dispose();
     super.onClose();
   }
-
-  void togglePasswordVisibility() =>
-      obscurePassword.value = !obscurePassword.value;
-
-  void toggleConfirmPasswordVisibility() =>
-      obscureConfirmPassword.value = !obscureConfirmPassword.value;
 }

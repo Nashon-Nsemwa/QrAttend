@@ -1,3 +1,4 @@
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -52,12 +53,27 @@ void main() async {
 
   Get.put(UserSessionController());
   Get.put(ThemeController()); // ✅ Inject ThemeController
+  // Auth and role check
+  // final box = GetStorage();
+  // final user = FirebaseAuth.instance.currentUser;
+  // final role = box.read('role');
+  // String initialRoute = '/';
+  // if (user != null && role != null) {
+  //   if (role == 'student') {
+  //     initialRoute = '/StudentDashboard';
+  //   } else if (role == 'lecture') {
+  //     initialRoute = '/LectureDashboard';
+  //   }
+  // }
 
-  runApp(const MyApp());
+  runApp(MyApp()); //initialRoute: initialRoute
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
+  // final String initialRoute;
+  // const MyApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +82,7 @@ class MyApp extends StatelessWidget {
     return Obx(
       () => GetMaterialApp(
         debugShowCheckedModeBanner: false,
-        initialRoute: '/',
+        initialRoute: '/', // ← Dynamic
         theme: lightmode,
         darkTheme: darkmode, // Optional: customize your dark theme here
         themeMode:
