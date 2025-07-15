@@ -212,12 +212,59 @@ class GenerateQrController extends GetxController {
           transaction.set(attendanceRef, {
             'createdOn': Timestamp.now(),
             'createdBy': lecName,
-            'students': {}, // will be filled later by students
+            'students': {}, // will be filled by students
           });
         } else {
           debugPrint("✅ Attendance already exists for today.");
         }
       });
+
+      // ✅ Recalculate attendance_summary for all students in this course
+      final studentsSnap =
+          await firestore
+              .collection('students')
+              .where('course', isEqualTo: course)
+              .get();
+
+      final allAttendanceDocs =
+          await firestore
+              .collection('courses')
+              .doc(courseDocId)
+              .collection('modules')
+              .doc(moduleDocId)
+              .collection('attendance')
+              .get();
+
+      int totalClasses = allAttendanceDocs.docs.length;
+
+      for (final studentDoc in studentsSnap.docs) {
+        final studentId = studentDoc.id;
+        final studentName = studentDoc['name'];
+
+        int attendedCount =
+            allAttendanceDocs.docs.where((doc) {
+              final studentsMap = doc.data()['students'] ?? {};
+              return studentsMap.containsKey(studentId);
+            }).length;
+
+        double percentage =
+            totalClasses == 0 ? 0 : (attendedCount / totalClasses) * 100;
+
+        await firestore
+            .collection('courses')
+            .doc(courseDocId)
+            .collection('modules')
+            .doc(moduleDocId)
+            .collection('attendance_summary')
+            .doc(studentId)
+            .set({
+              'name': studentName,
+              'attended': attendedCount,
+              'totalClasses': totalClasses,
+              'percentage': percentage,
+              'lastUpdated': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
+      }
 
       startCountdown();
     } catch (e) {
