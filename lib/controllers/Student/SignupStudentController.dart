@@ -145,7 +145,7 @@ class SignupStudentController extends GetxController {
       _hideLoading();
       showAlert("Success", "Signed up as ${student.name}", Colors.green);
 
-      Get.offAllNamed('/');
+      Get.offAllNamed('/StudentNavigation');
     } on FirebaseAuthException catch (e) {
       _hideLoading();
       showAlert("Auth Error", e.message ?? "Something went wrong", Colors.red);

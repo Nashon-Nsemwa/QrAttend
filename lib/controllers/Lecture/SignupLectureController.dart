@@ -121,9 +121,7 @@ class SignupLectureController extends GetxController {
 
       showAlert("Success", "Signed up as ${lecture.name}", Colors.green);
 
-      Future.delayed(const Duration(seconds: 1), () {
-        Get.offNamed('/LectureNavigation');
-      });
+      Get.offAllNamed('/LectureNavigation');
     } on FirebaseAuthException catch (e) {
       Get.back(); // Close loading dialog
       showAlert("Error", e.message ?? "Authentication failed", Colors.red);

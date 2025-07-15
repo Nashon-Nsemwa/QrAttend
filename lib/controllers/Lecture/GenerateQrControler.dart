@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -30,6 +31,7 @@ class GenerateQrController extends GetxController {
   Rxn<Position> fetchedPosition = Rxn<Position>();
 
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final String lecturerUid = FirebaseAuth.instance.currentUser?.uid ?? '';
 
   @override
   void onInit() {
@@ -59,7 +61,7 @@ class GenerateQrController extends GetxController {
               .collection('courses')
               .doc(courseDoc.id)
               .collection('modules')
-              .where('lecturer', isEqualTo: 'Mr Nsemwa')
+              .where('lecturerUid', isEqualTo: lecturerUid)
               .get();
 
       if (modulesSnapshot.docs.isNotEmpty) {
@@ -133,99 +135,68 @@ class GenerateQrController extends GetxController {
     isLoading.value = true;
 
     try {
-      Position position;
+      // 🧭 Get Location
+      Position position = fetchedPosition.value ?? await _getCurrentLocation();
+      fetchedPosition.value = position;
 
-      if (fetchedPosition.value == null) {
-        position = await _getCurrentLocation().timeout(
-          Duration(seconds: 10),
-          onTimeout: () {
-            Get.snackbar(
-              "Timeout",
-              "Location request timed out. Please ensure GPS is enabled and try again.",
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
-            );
-            throw Exception("Fetching location timed out.");
-          },
-        );
-        fetchedPosition.value = position;
-      } else {
-        position = fetchedPosition.value!;
-      }
-
-      String lectureId = "Lec_${DateTime.now().millisecondsSinceEpoch}";
+      // 📄 Setup metadata
       String course = selectedCourse.value;
       String module = selectedModule.value;
-      String dateCreated = DateTime.now().toString();
+      String todayStr = getFormattedDate().replaceAll('-', '');
+      String attendanceDocId = "att_$todayStr";
+      DateTime now = DateTime.now();
 
       int minutes = int.parse(selectedDuration.value.split(" ")[0]);
-      DateTime newExpirationTime = DateTime.now().add(
-        Duration(minutes: minutes),
-      );
-      String secrecyCode = "secret_${DateTime.now().millisecondsSinceEpoch}";
+      DateTime newExpirationTime = now.add(Duration(minutes: minutes));
+      String secrecyCode = "secret_${now.millisecondsSinceEpoch}";
 
-      QRCode qrCode = QRCode(
-        lectureId: lectureId,
+      // 🔎 Find Course + Module
+      final courseSnap =
+          await firestore
+              .collection('courses')
+              .where('name', isEqualTo: course)
+              .get();
+      if (courseSnap.docs.isEmpty) throw Exception("Course not found");
+
+      final courseDoc = courseSnap.docs.first;
+      final courseDocId = courseDoc.id;
+
+      final moduleSnap =
+          await firestore
+              .collection('courses')
+              .doc(courseDocId)
+              .collection('modules')
+              .where('name', isEqualTo: module)
+              .where('lecturerUid', isEqualTo: lecturerUid)
+              .get();
+      if (moduleSnap.docs.isEmpty) throw Exception("Module not found");
+
+      final moduleDoc = moduleSnap.docs.first;
+      final moduleDocId = moduleDoc.id;
+
+      // 🔍 Fetch lecturer name
+      final lecSnap =
+          await firestore.collection('lectures').doc(lecturerUid).get();
+      final lecName = lecSnap.data()?['name'] ?? 'Unknown';
+
+      // 🧠 Build QR model
+      final qrCode = QRCode(
+        lectureId: "Lec_${now.millisecondsSinceEpoch}",
         course: course,
         module: module,
-        dateCreated: dateCreated,
+        dateCreated: now.toString(),
         expirationTime: newExpirationTime,
         secrecyCode: secrecyCode,
         latitude: position.latitude,
         longitude: position.longitude,
       );
 
-      // Save QR locally only
       saveQRCodeToStorage(qrCode);
       expirationTime.value = newExpirationTime;
+      generatedText.value = jsonEncode(qrCode.toMap());
 
-      generatedText.value = jsonEncode({
-        'lectureId': lectureId,
-        'course': course,
-        'module': module,
-        'dateCreated': dateCreated,
-        'expirationTime': newExpirationTime.toIso8601String(),
-        'secrecyCode': secrecyCode,
-        'latitude': position.latitude,
-        'longitude': position.longitude,
-      });
-
-      // --- Firestore attendance doc creation/update ---
-
-      // Find course document ID by course name
-      QuerySnapshot coursesSnapshot =
-          await firestore
-              .collection('courses')
-              .where('name', isEqualTo: course)
-              .get();
-
-      if (coursesSnapshot.docs.isEmpty) {
-        throw Exception("Course document not found");
-      }
-
-      final courseDocId = coursesSnapshot.docs.first.id;
-
-      // Find module document ID by module name under course
-      QuerySnapshot modulesSnapshot =
-          await firestore
-              .collection('courses')
-              .doc(courseDocId)
-              .collection('modules')
-              .where('name', isEqualTo: module)
-              .where('lecturer', isEqualTo: 'Mr Nsemwa')
-              .get();
-
-      if (modulesSnapshot.docs.isEmpty) {
-        throw Exception("Module document not found");
-      }
-
-      final moduleDocId = modulesSnapshot.docs.first.id;
-
-      // Attendance document ID based on date (e.g., "att_YYYYMMDD")
-      final todayStr = getFormattedDate().replaceAll('-', '');
-      final attendanceDocId = "att_$todayStr";
-
-      final attendanceDocRef = firestore
+      // 🔥 Attendance document reference (one per day)
+      final attendanceRef = firestore
           .collection('courses')
           .doc(courseDocId)
           .collection('modules')
@@ -233,24 +204,18 @@ class GenerateQrController extends GetxController {
           .collection('attendance')
           .doc(attendanceDocId);
 
-      // Run transaction to create or update attendance doc atomically
+      // ✅ Only create attendance doc if not exists
       await firestore.runTransaction((transaction) async {
-        final snapshot = await transaction.get(attendanceDocRef);
+        final snapshot = await transaction.get(attendanceRef);
 
         if (!snapshot.exists) {
-          // Create new attendance doc
-          transaction.set(attendanceDocRef, {
+          transaction.set(attendanceRef, {
             'createdOn': Timestamp.now(),
-            'totalclasses': 1,
-            'createdBy': 'Mr Nsemwa',
-            'students': {}, // empty map initially
+            'createdBy': lecName,
+            'students': {}, // will be filled later by students
           });
         } else {
-          // Increment totalclasses by 1
-          int currentTotal = snapshot.get('totalclasses') ?? 0;
-          transaction.update(attendanceDocRef, {
-            'totalclasses': currentTotal + 1,
-          });
+          debugPrint("✅ Attendance already exists for today.");
         }
       });
 

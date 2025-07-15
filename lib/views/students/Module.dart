@@ -22,6 +22,11 @@ class Modules extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.blue),
+            );
+          }
           if (controller.moduleList.isEmpty) {
             return const Center(
               child: Text(
@@ -67,11 +72,6 @@ class Modules extends StatelessWidget {
                       ),
                       Text(
                         "Lecturer: ${module.lecturer}",
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "Description: ${module.description}",
                         style: const TextStyle(fontSize: 14),
                       ),
                     ],

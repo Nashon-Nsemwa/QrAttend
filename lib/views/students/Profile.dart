@@ -20,6 +20,13 @@ class ProfileStudent extends StatelessWidget {
         final student = controller.student.value;
         final showDeleteConfirm = controller.showDeleteConfirm.value;
 
+        // Show loading indicator while student data is loading
+        if (student == null) {
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.blue),
+          );
+        }
+
         return Stack(
           children: [
             Column(
@@ -71,6 +78,8 @@ class ProfileStudent extends StatelessWidget {
                               controller.updateEmail(
                                 controller.emailController.text.trim(),
                               );
+                              controller
+                                  .saveProfileChanges(); // Save changes on Save button
                             }
                             controller.toggleEdit();
                           },
@@ -81,7 +90,7 @@ class ProfileStudent extends StatelessWidget {
                           ),
                           label: Text(
                             isEditing ? "Save" : "Edit",
-                            style: TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue[600],
@@ -160,7 +169,14 @@ class ProfileStudent extends StatelessWidget {
                                           bottom: 0,
                                           right: 0,
                                           child: GestureDetector(
-                                            onTap: controller.pickImage,
+                                            onTap: () {
+                                              Get.snackbar(
+                                                "Coming Soon",
+                                                "Profile picture upload feature coming soon!",
+                                                backgroundColor: Colors.orange,
+                                                colorText: Colors.white,
+                                              );
+                                            },
                                             child: CircleAvatar(
                                               radius: 16,
                                               backgroundColor: Colors.black54,
@@ -196,7 +212,7 @@ class ProfileStudent extends StatelessWidget {
 
                                 _buildReadOnlyItem(
                                   "Student ID",
-                                  student.registrationNo,
+                                  student.registrationNumber,
                                 ),
                                 _buildReadOnlyItem("Course", student.course),
                                 _buildReadOnlyItem(
@@ -213,14 +229,14 @@ class ProfileStudent extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(top: 24),
                             child: OutlinedButton.icon(
-                              icon: Icon(Icons.delete, color: Colors.red),
-                              label: Text(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              label: const Text(
                                 "Delete Account",
                                 style: TextStyle(color: Colors.red),
                               ),
                               style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: Colors.red),
-                                minimumSize: Size.fromHeight(50),
+                                side: const BorderSide(color: Colors.red),
+                                minimumSize: const Size.fromHeight(50),
                               ),
                               onPressed:
                                   () =>
@@ -252,9 +268,13 @@ class ProfileStudent extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.warning, color: Colors.red, size: 40),
+                          const Icon(
+                            Icons.warning,
+                            color: Colors.red,
+                            size: 40,
+                          ),
                           const SizedBox(height: 16),
-                          Text(
+                          const Text(
                             "Delete Account",
                             style: TextStyle(
                               fontSize: 18,
@@ -291,7 +311,8 @@ class ProfileStudent extends StatelessWidget {
                                     backgroundColor: Colors.red,
                                   ),
                                   onPressed: controller.handleDeleteAccount,
-                                  child: Text("Delete"),
+
+                                  child: const Text("Delete"),
                                 ),
                               ),
                             ],
@@ -328,7 +349,7 @@ class ProfileStudent extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
         ),
-        style: TextStyle(fontSize: 16),
+        style: const TextStyle(fontSize: 16),
         controller: controller,
       ),
     );

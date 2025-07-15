@@ -63,9 +63,7 @@ class SigninLectureController extends GetxController {
       _hideLoading();
       showAlert("Success", "Login successful", Colors.green);
 
-      Future.delayed(const Duration(milliseconds: 600), () {
-        Get.offNamed('/LectureNavigation');
-      });
+      Get.offAllNamed('/LectureNavigation');
     } on FirebaseAuthException catch (e) {
       _hideLoading();
       showAlert(

@@ -69,7 +69,7 @@ class SigninStudentController extends GetxController {
       showAlert("Success", "Login successful", Colors.green);
 
       Future.delayed(const Duration(milliseconds: 600), () {
-        Get.offNamed('/StudentNavigation');
+        Get.offAllNamed('/StudentNavigation');
       });
     } on FirebaseAuthException catch (e) {
       _hideLoading();
