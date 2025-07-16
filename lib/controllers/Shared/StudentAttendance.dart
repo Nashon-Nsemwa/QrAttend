@@ -1,20 +1,18 @@
 import 'package:get/get.dart';
-import 'package:qrattend/models/studentAttendance.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../models/studentAttendance.dart';
+import 'package:intl/intl.dart';
 
 class AttendanceController extends GetxController {
-  // Student name from API
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final String studentId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
   var studentName = "Loading...".obs;
-
-  // List of modules
   var modules = <Module>[].obs;
-
-  // Selected module
   var selectedModule = Rxn<Module>();
 
-  // Attendance details
   var attendanceDetails = <AttendanceDetail>[].obs;
-
-  // Attendance summary stats
   var totalClasses = 0.obs;
   var presentDays = 0.obs;
   var absentDays = 0.obs;
@@ -27,38 +25,97 @@ class AttendanceController extends GetxController {
     fetchModules();
   }
 
-  // Fetch student name (simulate API call)
   void fetchStudentName() async {
-    await Future.delayed(const Duration(seconds: 1)); // Simulate loading
-    studentName.value = "John Doe"; // Placeholder — replace with API data
+    final studentDoc =
+        await firestore.collection('students').doc(studentId).get();
+    if (studentDoc.exists) {
+      studentName.value = studentDoc['name'] ?? "Unknown";
+    } else {
+      studentName.value = "Not Found";
+    }
   }
 
-  // Fetch modules (simulate API)
-  void fetchModules() {
-    modules.value = [
-      Module(code: "CS101", name: "Computer Science", lecturer: "Dr. Smith"),
-      Module(code: "MATH101", name: "Mathematics", lecturer: "Prof. John"),
-    ];
+  Future<void> fetchModules() async {
+    isLoading.value = true;
+    final studentDoc =
+        await firestore.collection('students').doc(studentId).get();
+    if (!studentDoc.exists) {
+      isLoading.value = false;
+      return;
+    }
+
+    final String courseName = studentDoc['course'];
+    final courseQuery =
+        await firestore
+            .collection('courses')
+            .where('name', isEqualTo: courseName)
+            .get();
+
+    if (courseQuery.docs.isEmpty) {
+      isLoading.value = false;
+      return;
+    }
+
+    final courseDoc = courseQuery.docs.first;
+    final courseId = courseDoc.id;
+
+    final modulesQuery =
+        await firestore
+            .collection('courses')
+            .doc(courseId)
+            .collection('modules')
+            .get();
+
+    modules.value =
+        modulesQuery.docs.map((doc) {
+          return Module.fromFirestore(doc.id, doc.data(), courseId);
+        }).toList();
+
+    isLoading.value = false;
   }
 
-  // Fetch attendance details and summary (simulate API) and internet loading on the attendance details
   Future<void> fetchAttendance(Module module) async {
     try {
       isLoading.value = true;
-      await Future.delayed(const Duration(seconds: 1));
-      attendanceDetails.value = [
-        AttendanceDetail(date: "2025-03-10", status: "Present"),
-        AttendanceDetail(date: "2025-03-11", status: "Absent"),
-        AttendanceDetail(date: "2025-03-12", status: "Present"),
-        AttendanceDetail(date: "2025-03-13", status: "Absent"),
-        AttendanceDetail(date: "2025-03-14", status: "Present"),
-      ];
 
-      totalClasses.value = attendanceDetails.length;
-      presentDays.value =
-          attendanceDetails.where((a) => a.status == "Present").length;
-      absentDays.value =
-          attendanceDetails.where((a) => a.status == "Absent").length;
+      final attendanceCollection = firestore
+          .collection('courses')
+          .doc(module.courseId)
+          .collection('modules')
+          .doc(module.id)
+          .collection('attendance');
+
+      final snapshots = await attendanceCollection.orderBy('createdOn').get();
+
+      int attended = 0;
+      List<AttendanceDetail> records = [];
+
+      for (var doc in snapshots.docs) {
+        final data = doc.data();
+        final ts = data['createdOn'] as Timestamp?;
+        final dateStr =
+            ts != null
+                ? DateFormat('yyyy-MM-dd').format(ts.toDate())
+                : "Unknown";
+
+        final studentsMap = data['students'] as Map<String, dynamic>? ?? {};
+        final status =
+            studentsMap.containsKey(studentId) ? "Present" : "Absent";
+        if (status == "Present") attended++;
+
+        records.add(AttendanceDetail(date: dateStr, status: status));
+      }
+
+      attendanceDetails.value = records;
+      totalClasses.value = records.length;
+      presentDays.value = attended;
+      absentDays.value = totalClasses.value - presentDays.value;
+    } catch (e) {
+      print("Error fetching attendance: $e");
+      totalClasses.value = 0;
+      presentDays.value = 0;
+      absentDays.value = 0;
+      attendanceDetails.clear();
     } finally {
       isLoading.value = false;
     }

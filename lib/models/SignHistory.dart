@@ -1,19 +1,19 @@
 class SignHistoryModel {
-  final String courseCode;
+  final String moduleCode;
   final String timeSigned;
   final String status;
 
   SignHistoryModel({
-    required this.courseCode,
+    required this.moduleCode,
     required this.timeSigned,
     required this.status,
   });
 
-  factory SignHistoryModel.fromJson(Map<String, dynamic> json) {
+  factory SignHistoryModel.fromMap(Map<String, dynamic> data) {
     return SignHistoryModel(
-      courseCode: json['course_code'],
-      timeSigned: json['time_signed'],
-      status: json['status'],
+      moduleCode: data['course_code'] ?? '',
+      timeSigned: data['time_signed'] ?? '',
+      status: data['status'] ?? '',
     );
   }
 }

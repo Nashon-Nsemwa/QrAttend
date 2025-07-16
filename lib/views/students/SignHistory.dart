@@ -22,6 +22,9 @@ class SignHistory extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Obx(() {
+          if (controller.isLoading.value) {
+            return Center(child: CircularProgressIndicator(color: Colors.blue));
+          }
           if (controller.signHistoryList.isEmpty) {
             return const Center(
               child: Text(
@@ -39,7 +42,7 @@ class SignHistory extends StatelessWidget {
               return ListTile(
                 leading: const Icon(Icons.check_circle, color: Colors.green),
                 title: Text(
-                  sign.courseCode,
+                  sign.moduleCode,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text("Time Signed: ${sign.timeSigned}"),
