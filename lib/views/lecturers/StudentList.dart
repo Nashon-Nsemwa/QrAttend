@@ -24,34 +24,79 @@ class StudentList extends StatelessWidget {
           () => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              DropdownButtonFormField<String>(
-                value: controller.selectedCourse.value,
-                decoration: InputDecoration(
-                  labelText: "Select Course",
-                  labelStyle: const TextStyle(color: Colors.blue),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Colors.blue),
-                  ),
-                ),
-                items:
-                    controller.courses
-                        .map(
-                          (course) => DropdownMenuItem(
+              Obx(() {
+                if (controller.isLoading.value && controller.courses.isEmpty) {
+                  // Show loading indicator instead of dropdown while fetching courses
+                  return InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: "Select Course",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        const SizedBox(width: 10),
+                        const Text("Loading courses..."),
+                      ],
+                    ),
+                  );
+                } else if (controller.courses.isEmpty) {
+                  // No courses available - show disabled dropdown
+                  return DropdownButtonFormField<String>(
+                    items: [],
+                    onChanged: null,
+                    decoration: InputDecoration(
+                      labelText: "Select Course",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    hint: const Text("No courses found"),
+                  );
+                } else {
+                  // Normal dropdown when courses are loaded
+                  return DropdownButtonFormField<String>(
+                    value:
+                        controller.courses.contains(
+                              controller.selectedCourse.value,
+                            )
+                            ? controller.selectedCourse.value
+                            : null,
+                    decoration: InputDecoration(
+                      labelText: "Select Course",
+                      labelStyle: const TextStyle(color: Colors.blue),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Colors.blue),
+                      ),
+                    ),
+                    items:
+                        controller.courses.map((course) {
+                          return DropdownMenuItem(
                             value: course,
                             child: Text(course),
-                          ),
-                        )
-                        .toList(),
-                onChanged: (value) {
-                  controller.selectedCourse.value = value!;
-                  controller.fetchModules(value);
-                  controller.filterStudents();
-                },
-              ),
+                          );
+                        }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        controller.selectedCourse.value = value;
+                        controller.fetchModules(value);
+                        controller.filterStudents();
+                      }
+                    },
+                  );
+                }
+              }),
+
               const SizedBox(height: 10),
               const Text(
                 "Modules:",

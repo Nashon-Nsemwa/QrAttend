@@ -1,4 +1,5 @@
 class StudentList {
+  final String id;
   final String name;
   final String regNo;
   final String course;
@@ -8,12 +9,13 @@ class StudentList {
   final bool isClassRep;
 
   StudentList({
+    required this.id,
     required this.name,
     required this.regNo,
     required this.course,
     required this.module,
     required this.email,
     required this.year,
-    this.isClassRep = false,
+    required this.isClassRep,
   });
 }
