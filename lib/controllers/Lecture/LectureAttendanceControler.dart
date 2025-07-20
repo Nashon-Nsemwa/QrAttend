@@ -1,181 +1,216 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:qrattend/models/Student.dart';
 
 class LectureAttendanceController extends GetxController {
-  // Module and filter states
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final String lectureUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+
   var selectedModule = RxnString(null);
   var searchQuery = ''.obs;
   var selectedFilter = 'Recent'.obs;
 
-  // Loading and data states
   var isLoading = false.obs;
+  var modules = <String>[].obs;
   var students = <Student>[].obs;
-
   var filteredStudents = <Student>[].obs;
   var activeFilter = "Recent Attendance".obs;
 
-  // Hardcoded modules list
-  final List<String> _hardcodedModules = [
-    'Math',
-    'Physics',
-    'Computer Science',
-  ];
-
-  // List for dynamically fetched modules (but hardcoded)
-  var modules = <String>[].obs;
-
-  // Mock student attendance data (with dates and module data)
-  final List<Student> allStudents = [
-    Student(
-      name: "John Doe",
-      registrationNumber: "12345",
-      isPresent: true,
-      date: DateTime(2025, 2, 16),
-      module: 'Math',
-    ),
-    Student(
-      name: "Jane Smith",
-      registrationNumber: "67890",
-      isPresent: false,
-      date: DateTime(2025, 2, 15),
-      module: 'Physics',
-    ),
-    Student(
-      name: "Mike Johnson",
-      registrationNumber: "11223",
-      isPresent: true,
-      date: DateTime(2025, 2, 9),
-      module: 'Computer Science',
-    ),
-    Student(
-      name: "Anna Brown",
-      registrationNumber: "44556",
-      isPresent: false,
-      date: DateTime(2025, 1, 27),
-      module: 'Math',
-    ),
-    Student(
-      name: "Chris Evans",
-      registrationNumber: "77889",
-      isPresent: true,
-      date: DateTime(2025, 1, 16),
-      module: 'Physics',
-    ),
-  ];
-
-  // Dynamically generate date filters based on selected module
-  List<String> get dateFilters {
-    Set<String> uniqueDates = {};
-    if (selectedModule.value != null) {
-      for (var student in allStudents) {
-        if (student.module == selectedModule.value) {
-          uniqueDates.add(DateFormat('yyyy-MM-dd').format(student.date));
-        }
-      }
-    }
-    return uniqueDates.toList();
-  }
-
-  // Dynamically get the most recent date based on the selected module
-  String get defaultDate {
-    if (selectedModule.value == null) return '';
-
-    List<DateTime> dates = [];
-    for (var student in allStudents) {
-      if (student.module == selectedModule.value) {
-        dates.add(student.date);
-      }
-    }
-    dates.sort(
-      (a, b) => b.compareTo(a),
-    ); // Sort dates in descending order (most recent first)
-    return DateFormat(
-      'yyyy-MM-dd',
-    ).format(dates.isNotEmpty ? dates.first : DateTime.now());
-  }
+  Map<String, List<DateTime>> attendanceMap = {};
+  List<String> allDates = [];
 
   @override
   void onInit() {
     super.onInit();
-    fetchModules(); // Fetch modules (though they are hardcoded) on initialization
+    fetchModules();
+    everAll([selectedModule, selectedFilter], (_) => fetchAttendance());
   }
 
-  // Fetch modules (hardcoded but simulating fetch)
-  void fetchModules() {
-    // Simulate network delay
-    modules.value = _hardcodedModules; // Set hardcoded modules list
-  }
+  /// ✅ Fetch modules from lecture's profile
+  Future<void> fetchModules() async {
+    isLoading.value = true;
+    modules.clear();
 
-  // Fetch attendance data (mock API call)
-  Future<void> fetchAttendance() async {
     try {
-      isLoading.value = true;
-      await Future.delayed(const Duration(seconds: 1)); // Simulate API delay
-      students.value =
-          allStudents.where((student) {
-            return selectedModule.value == null ||
-                student.module == selectedModule.value;
-          }).toList(); // Filter by selected module
-      applyFilter(selectedFilter.value);
+      final doc = await firestore.collection('lectures').doc(lectureUid).get();
+      if (!doc.exists) return;
+
+      final data = doc.data();
+      final details = data?['details'] ?? {};
+      final lectureModules = List<String>.from(details['modules'] ?? []);
+      modules.assignAll(lectureModules.toSet().toList());
+    } catch (e) {
+      Get.snackbar(
+        "Error!",
+        "Failed to fetch module",
+        backgroundColor: Colors.red,
+      );
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Select module with loading indication
-  void selectModule(String? module) {
-    selectedModule.value = module;
-    fetchAttendance(); // Show loading progress only after module is selected
+  /// ✅ Fetch students who attended at least once
+  Future<void> fetchAttendance() async {
+    final moduleName = selectedModule.value;
+    if (moduleName == null) return;
+
+    isLoading.value = true;
+    students.clear();
+    attendanceMap.clear();
+
+    try {
+      DocumentSnapshot? moduleDoc;
+
+      // 🔍 Find the module
+      final coursesSnap = await firestore.collection('courses').get();
+      for (var course in coursesSnap.docs) {
+        final modulesSnap = await course.reference.collection('modules').get();
+        for (var mod in modulesSnap.docs) {
+          final modData = mod.data();
+          if (modData['name'] == moduleName &&
+              modData['lecturerUid'] == lectureUid) {
+            moduleDoc = mod;
+            break;
+          }
+        }
+        if (moduleDoc != null) break;
+      }
+
+      if (moduleDoc == null) {
+        Get.snackbar("Error", "Module not found");
+        return;
+      }
+
+      // 📅 Get attendance records
+      final attendanceSnap =
+          await moduleDoc.reference
+              .collection('attendance')
+              .orderBy('createdOn', descending: true)
+              .get();
+
+      final List<DateTime> dateList = [];
+
+      for (var doc in attendanceSnap.docs) {
+        final Timestamp? ts = doc['createdOn'];
+        final createdOn = ts?.toDate() ?? DateTime.now();
+        dateList.add(createdOn);
+
+        final Map<String, dynamic> studentMap = Map<String, dynamic>.from(
+          doc['students'] ?? {},
+        );
+
+        for (var sid in studentMap.keys) {
+          attendanceMap.putIfAbsent(sid, () => []).add(createdOn);
+        }
+      }
+
+      // 📅 Extract and sort unique attendance dates
+      allDates =
+          dateList
+              .map((d) => DateFormat('yyyy-MM-dd').format(d))
+              .toSet()
+              .toList()
+            ..sort((a, b) => b.compareTo(a)); // descending order
+
+      // 👤 Build a unique list of students who attended at least once
+      final attendedStudentIds = attendanceMap.keys.toSet();
+      if (attendedStudentIds.isEmpty) {
+        students.clear();
+        filteredStudents.clear();
+        return;
+      }
+
+      final studentSnap =
+          await firestore
+              .collection('students')
+              .where(FieldPath.documentId, whereIn: attendedStudentIds.toList())
+              .get();
+
+      final Map<String, Student> uniqueStudentsMap = {};
+
+      for (var sDoc in studentSnap.docs) {
+        final sid = sDoc.id;
+        final sData = sDoc.data();
+        final dates = attendanceMap[sid] ?? [];
+
+        uniqueStudentsMap[sid] = Student(
+          id: sid,
+          name: sData['name'] ?? '',
+          registrationNumber: sData['registrationNumber'] ?? '',
+          isPresent: false, // Will be set during filtering
+          date: dates.isEmpty ? DateTime.now() : dates.first,
+          module: moduleName,
+          attendanceDates: dates,
+        );
+      }
+
+      students.assignAll(uniqueStudentsMap.values.toList());
+      applyFilter(selectedFilter.value);
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        "Failed to fetch attendance",
+        backgroundColor: Colors.red,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  // Search logic
+  /// ✅ Apply search + filter
   void searchStudents(String query) {
     searchQuery.value = query;
-    if (query.isEmpty) {
-      applyFilter(selectedFilter.value); // Reapply filter after search clears
-    } else {
-      filteredStudents.value =
-          students
-              .where(
-                (student) =>
-                    student.name.toLowerCase().contains(query.toLowerCase()) ||
-                    student.registrationNumber.contains(query),
-              )
-              .toList();
-    }
+    applyFilter(selectedFilter.value);
   }
 
-  // Date-based Filter logic (updated to use dynamic date filters)
+  /// ✅ Core filtering logic
   void applyFilter(String filter) {
     selectedFilter.value = filter;
+    final qLower = searchQuery.value.toLowerCase();
+    final String? formattedSelectedDate = filter == 'Recent' ? null : filter;
+
+    final String? recentDate = allDates.isNotEmpty ? allDates.first : null;
 
     filteredStudents.value =
-        students.where((student) {
-          bool matchesModule =
-              selectedModule.value == null ||
-              student.module == selectedModule.value;
-          bool matchesFilter = false;
+        students
+            .map((s) {
+              bool present = false;
 
-          // Dynamically check if the student's date matches the selected filter
-          if (filter == "Recent") {
-            matchesFilter = true; // Show all attendance
-          } else {
-            matchesFilter =
-                DateFormat('yyyy-MM-dd').format(student.date) == filter;
-          }
+              if (formattedSelectedDate != null) {
+                present = s.attendanceDates.any(
+                  (dt) =>
+                      DateFormat('yyyy-MM-dd').format(dt) ==
+                      formattedSelectedDate,
+                );
+              } else if (recentDate != null) {
+                present = s.attendanceDates.any(
+                  (dt) => DateFormat('yyyy-MM-dd').format(dt) == recentDate,
+                );
+              }
 
-          return matchesModule && matchesFilter;
-        }).toList();
+              return s.copyWith(isPresent: present);
+            })
+            .where(
+              (s) =>
+                  s.name.toLowerCase().contains(qLower) ||
+                  s.registrationNumber.toLowerCase().contains(qLower),
+            )
+            .toList();
 
-    // If no records found for the filter
-    if (filteredStudents.isEmpty) {
-      activeFilter.value = "No results for $filter";
-    } else {
-      activeFilter.value = "Showing: $filter Attendance";
-    }
+    activeFilter.value =
+        filteredStudents.isEmpty
+            ? "No records found"
+            : (filter == 'Recent'
+                ? "Showing Recent Attendance"
+                : "Showing on $filter");
   }
 
-  // Format date for display
-  String formatDate(DateTime date) => DateFormat('yyyy-MM-dd').format(date);
+  /// ✅ For dropdown
+  List<String> get dateFilters => allDates;
+
+  String formatDate(DateTime d) => DateFormat('yyyy-MM-dd').format(d);
 }

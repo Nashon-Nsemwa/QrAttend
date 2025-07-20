@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:qrattend/controllers/Shared/SignOutController.dart';
 import 'package:qrattend/controllers/Shared/ThemeController.dart';
 import 'package:qrattend/controllers/Shared/UserSessionController.dart';
@@ -50,11 +51,13 @@ class Settings extends StatelessWidget {
                       title: "Profile",
                       onTap: () {
                         // Handle Profile action
-                        final role = sessionController.role.value;
-                        if (role == UserRole.student) {
-                          Get.toNamed("/Student_Profile");
-                        } else if (role == UserRole.lecturer) {
-                          Get.toNamed("/Lecture_Profile");
+                        final box = GetStorage();
+                        final role = box.read('role');
+
+                        if (role == 'student') {
+                          Get.toNamed('/Student_Profile');
+                        } else if (role == 'lecture') {
+                          Get.toNamed('/Lecture_Profile');
                         }
                       },
                       context: context,

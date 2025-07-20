@@ -13,6 +13,7 @@ class ProfileLecture extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: Obx(() {
         final isEditing = controller.isEditing.value;
@@ -35,7 +36,6 @@ class ProfileLecture extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Back + Title
                         Row(
                           children: [
                             IconButton(
@@ -137,11 +137,11 @@ class ProfileLecture extends StatelessWidget {
                                           ),
                                           color: Colors.grey[200],
                                           image:
-                                              lecturer.profileImagePath != null
+                                              lecturer?.profileImagePath != null
                                                   ? DecorationImage(
                                                     image: FileImage(
                                                       File(
-                                                        lecturer
+                                                        lecturer!
                                                             .profileImagePath!,
                                                       ),
                                                     ),
@@ -150,7 +150,7 @@ class ProfileLecture extends StatelessWidget {
                                                   : null,
                                         ),
                                         child:
-                                            lecturer.profileImagePath == null
+                                            lecturer?.profileImagePath == null
                                                 ? Icon(
                                                   Icons.person,
                                                   size: 40,
@@ -180,47 +180,51 @@ class ProfileLecture extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 24),
 
-                                isEditing
-                                    ? _buildEditableField(
-                                      label: "Name",
-                                      fieldcontrollerr:
-                                          controller.nameController,
-                                    )
-                                    : _buildReadOnlyItem("Name", lecturer.name),
+                                if (lecturer != null) ...[
+                                  isEditing
+                                      ? _buildEditableField(
+                                        label: "Name",
+                                        fieldcontrollerr:
+                                            controller.nameController,
+                                      )
+                                      : _buildReadOnlyItem(
+                                        "Name",
+                                        lecturer.name,
+                                      ),
 
-                                isEditing
-                                    ? _buildEditableField(
-                                      label: "Email",
-                                      fieldcontrollerr:
-                                          controller.emailController,
-                                    )
-                                    : _buildReadOnlyItem(
-                                      "Email",
-                                      lecturer.email,
-                                    ),
+                                  isEditing
+                                      ? _buildEditableField(
+                                        label: "Email",
+                                        fieldcontrollerr:
+                                            controller.emailController,
+                                      )
+                                      : _buildReadOnlyItem(
+                                        "Email",
+                                        lecturer.email,
+                                      ),
 
-                                _buildReadOnlyItem(
-                                  "Lecturer ID",
-                                  lecturer.lecturerId,
-                                ),
-                                _buildReadOnlyItem(
-                                  "Department",
-                                  lecturer.department,
-                                ),
-                                _buildReadOnlyItem(
-                                  "Courses",
-                                  lecturer.courses.join(', '),
-                                ),
-                                _buildReadOnlyItem(
-                                  "Modules",
-                                  lecturer.modules.join(', '),
-                                ),
+                                  _buildReadOnlyItem(
+                                    "Lecturer ID",
+                                    lecturer.lectureId,
+                                  ),
+                                  _buildReadOnlyItem(
+                                    "Department",
+                                    lecturer.department,
+                                  ),
+                                  _buildReadOnlyItem(
+                                    "Courses",
+                                    lecturer.courses.join(', '),
+                                  ),
+                                  _buildReadOnlyItem(
+                                    "Modules",
+                                    lecturer.modules.join(', '),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
                         ),
 
-                        // Delete button
                         if (!isEditing)
                           Padding(
                             padding: const EdgeInsets.only(top: 24),

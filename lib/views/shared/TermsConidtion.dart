@@ -1,44 +1,126 @@
 import 'package:flutter/material.dart';
-import 'package:dropdown_search/dropdown_search.dart';
 
 class TermsCondition extends StatelessWidget {
-  TermsCondition({super.key});
-  final List<String> items = [
-    "banana",
-    "mango",
-    "apple",
-    "cars",
-    "trees",
-    "walls",
-  ];
+  const TermsCondition({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: DropdownSearch<String>(
-          items: (filter, loadProps) {
-            return items;
-          },
-          selectedItem: "menu",
-          onChanged: (value) {
-            print("selected value is $value");
-          },
-          decoratorProps: DropDownDecoratorProps(
-            decoration: InputDecoration(
-              labelText: "search course",
-              hintText: "search and select",
-              border: OutlineInputBorder(),
-            ),
-          ),
-          popupProps: const PopupProps.menu(
-            showSearchBox: true,
-            searchFieldProps: TextFieldProps(
-              decoration: InputDecoration(
-                labelText: "search",
-                border: OutlineInputBorder(),
+      appBar: AppBar(title: const Text("Terms & Conditions")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              SizedBox(height: 16),
+
+              Text(
+                "1. Acceptance of Terms",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-            ),
+              SizedBox(height: 6),
+              Text(
+                "By using the QRAttend app, you agree to follow these Terms and Conditions. If you do not agree, please do not use the app.",
+                style: TextStyle(fontSize: 16),
+              ),
+
+              SizedBox(height: 16),
+              Text(
+                "2. Purpose of the App",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 6),
+              Text(
+                "QRAttend is designed to help schools, lecturers, and students manage attendance using QR codes. The app is intended strictly for academic use.",
+                style: TextStyle(fontSize: 16),
+              ),
+
+              SizedBox(height: 16),
+              Text(
+                "3. User Responsibilities",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 6),
+              Text(
+                "- You must provide accurate information when signing up.\n"
+                "- You must not misuse the QR system or impersonate others.\n"
+                "- You are responsible for keeping your account secure.",
+                style: TextStyle(fontSize: 16),
+              ),
+
+              SizedBox(height: 16),
+              Text(
+                "4. Access and Usage",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 6),
+              Text(
+                "Access to QRAttend is role-based (Student, Lecturer, Admin). Features are restricted based on your assigned role, and misuse may result in suspension.",
+                style: TextStyle(fontSize: 16),
+              ),
+
+              SizedBox(height: 16),
+              Text(
+                "5. Intellectual Property",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 6),
+              Text(
+                "All content, icons, and features in QRAttend are the property of the developer. Do not copy or redistribute the app or its code without permission.",
+                style: TextStyle(fontSize: 16),
+              ),
+
+              SizedBox(height: 16),
+              Text(
+                "6. Termination",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 6),
+              Text(
+                "We reserve the right to suspend or terminate access to the app if any user violates these terms or engages in harmful activities.",
+                style: TextStyle(fontSize: 16),
+              ),
+
+              SizedBox(height: 16),
+              Text(
+                "7. Changes to Terms",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 6),
+              Text(
+                "These terms may be updated at any time. Continued use of the app means you accept any changes.",
+                style: TextStyle(fontSize: 16),
+              ),
+
+              SizedBox(height: 16),
+              Text(
+                "8. Contact",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 6),
+              Text(
+                "If you have questions about these terms, please contact the developer at:",
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 6),
+              Text(
+                "📧 nashonnsemwa@gmail.com",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.blue,
+                ),
+              ),
+
+              SizedBox(height: 30),
+              Center(
+                child: Text(
+                  "© 2025 QRAttend",
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ),
+            ],
           ),
         ),
       ),

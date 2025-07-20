@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart'; // For navigation
+import 'package:get/get.dart';
+import 'package:qrattend/controllers/Student/DashboardController.dart'; // For navigation
 
 class StudentDashboard extends StatelessWidget {
   const StudentDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final StudentDashboardController controller = Get.put(
+      StudentDashboardController(),
+    );
     double screenWidth = MediaQuery.of(context).size.width;
     int crossAxisCount = screenWidth > 600 ? 3 : 2; // Adjust for tablets
     final theme = Theme.of(context).colorScheme;
@@ -21,17 +25,23 @@ class StudentDashboard extends StatelessWidget {
               child: Icon(Icons.person, size: 25),
             ),
             SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("Hello", style: TextStyle(fontSize: 14)),
-                Text(
-                  "Nashon Nsemwa",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
+            Obx(() {
+              return controller.isLoading.value
+                  ? const CircularProgressIndicator()
+                  : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Hello", style: TextStyle(fontSize: 14)),
+                      Text(
+                        controller.studentName.value,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  );
+            }),
           ],
         ),
       ),

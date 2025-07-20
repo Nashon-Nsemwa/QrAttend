@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:qrattend/views/lecturers/DashboardController.dart';
 
 class LectureDashboard extends StatelessWidget {
   const LectureDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final LectureDashboardController controller = Get.put(
+      LectureDashboardController(),
+    );
     double screenWidth = MediaQuery.of(context).size.width;
     int crossAxisCount = screenWidth > 600 ? 3 : 2; // Adjust for tablets
     final theme = Theme.of(context).colorScheme;
@@ -21,17 +25,23 @@ class LectureDashboard extends StatelessWidget {
               child: Icon(Icons.person, size: 25),
             ),
             SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("Hello", style: TextStyle(fontSize: 14)),
-                Text(
-                  "Mr. Nashon",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
+            Obx(() {
+              return controller.isLoading.value
+                  ? const CircularProgressIndicator(color: Colors.blue)
+                  : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Hello", style: TextStyle(fontSize: 14)),
+                      Text(
+                        controller.lectureName.value,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  );
+            }),
           ],
         ),
       ),

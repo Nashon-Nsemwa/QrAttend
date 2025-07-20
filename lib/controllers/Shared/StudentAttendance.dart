@@ -1,12 +1,15 @@
-import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../models/studentAttendance.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+
+import '../../models/studentAttendance.dart';
 
 class AttendanceController extends GetxController {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  final String studentId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+  // 🆕 Will use this for determining the target student
+  late final String studentId;
 
   var studentName = "Loading...".obs;
   var modules = <Module>[].obs;
@@ -21,6 +24,11 @@ class AttendanceController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
+    // 🔐 Determine which student we're viewing
+    final argId = Get.arguments?['studentId'];
+    studentId = argId ?? FirebaseAuth.instance.currentUser?.uid ?? '';
+
     fetchStudentName();
     fetchModules();
   }
@@ -67,9 +75,9 @@ class AttendanceController extends GetxController {
             .get();
 
     modules.value =
-        modulesQuery.docs.map((doc) {
-          return Module.fromFirestore(doc.id, doc.data(), courseId);
-        }).toList();
+        modulesQuery.docs
+            .map((doc) => Module.fromFirestore(doc.id, doc.data(), courseId))
+            .toList();
 
     isLoading.value = false;
   }
