@@ -1,98 +1,93 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:qrattend/models/Schedule.dart';
-// import 'dart:convert';
 
 class ScheduleController extends GetxController {
+  var isLoading = false.obs;
   var selectedDay = "Monday".obs;
   final schedules = <String, List<ScheduleItem>>{}.obs;
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Stream<DocumentSnapshot>? _scheduleStream;
 
   @override
   void onInit() {
     super.onInit();
-    fetchSchedule(); // Load data immediately on initialization
+    listenToScheduleForStudent();
   }
 
-  // 📲 Simulate backend fetch (mock data)
-  void fetchSchedule() {
-    schedules.value = {
-      "Monday": [
-        ScheduleItem(
-          type: "lecture",
-          subject: "Cryptography",
-          time: "08:00 - 09:30",
-          venue: "Room 101",
-        ),
-        ScheduleItem(
-          type: "break",
-          subject: "Break",
-          time: "09:30 - 10:00",
-          venue: "Cafeteria",
-        ),
-        ScheduleItem(
-          type: "lecture",
-          subject: "Networking",
-          time: "10:00 - 11:30",
-          venue: "Room 105",
-        ),
-        ScheduleItem(
-          type: "lecture",
-          subject: "Web based",
-          time: "12:00 - 13:30",
-          venue: "Room 105",
-        ),
-        ScheduleItem(
-          type: "lecture",
-          subject: "Database",
-          time: "13:00 - 14:30",
-          venue: "Room 105",
-        ),
-        ScheduleItem(
-          type: "lecture",
-          subject: "Programming",
-          time: "14:00 - 15:30",
-          venue: "Room 105",
-        ),
-      ],
-      "Tuesday": [
-        ScheduleItem(
-          type: "lecture",
-          subject: "Mathematics",
-          time: "08:00 - 09:30",
-          venue: "Room 102",
-        ),
-        ScheduleItem(
-          type: "lecture",
-          subject: "Programming",
-          time: "10:00 - 11:30",
-          venue: "Room 103",
-        ),
-      ],
-    };
+  void listenToScheduleForStudent() async {
+    try {
+      isLoading.value = true;
+
+      final user = _auth.currentUser;
+      if (user == null) throw Exception("User not signed in.");
+
+      final studentSnapshot =
+          await _firestore.collection('students').doc(user.uid).get();
+      if (!studentSnapshot.exists) throw Exception("Student not found.");
+
+      final data = studentSnapshot.data()!;
+      final course = data['course'] as String;
+      final year = data['year'] as String;
+      final docId = '${course}_$year';
+
+      _scheduleStream =
+          _firestore.collection('schedules').doc(docId).snapshots();
+
+      _scheduleStream!.listen((snapshot) {
+        if (!snapshot.exists) {
+          Get.snackbar(
+            "Not Found",
+            "Schedule not available for your course/year",
+          );
+          return;
+        }
+
+        final scheduleData = snapshot.data() as Map<String, dynamic>;
+        final loaded = <String, List<ScheduleItem>>{};
+
+        for (var day in [
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+        ]) {
+          final list = scheduleData[day] as List<dynamic>? ?? [];
+          loaded[day] =
+              list.map((item) {
+                return ScheduleItem(
+                  type: item['type'] ?? 'session',
+                  subject: item['module'] ?? '',
+                  time: item['time'] ?? '',
+                  venue: item['venue'] ?? '',
+                );
+              }).toList();
+        }
+
+        schedules.value = loaded;
+      });
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        duration: Duration(seconds: 3),
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  // 🌐 Backend Setup (Optional)
-  // Future<void> fetchScheduleFromBackend() async {
-  //   try {
-  //     var response = await http.get(Uri.parse('https://yourapi.com/schedule'));
-  //     if (response.statusCode == 200) {
-  //       // Parse the response into schedule data
-  //       var data = jsonDecode(response.body);
-  //       schedules.value = data.map<String, List<ScheduleItem>>(
-  //         (day, items) => MapEntry(
-  //           day,
-  //           (items as List).map((item) => ScheduleItem.fromJson(item)).toList(),
-  //         ),
-  //       );
-  //     } else {
-  //       throw Exception('Failed to load schedule');
-  //     }
-  //   } catch (e) {
-  //     Get.snackbar("Error", "Failed to fetch schedule");
-  //   }
-  // }
+  void setSelectedDay(String day) => selectedDay.value = day;
 
-  // Change selected day
-  void setSelectedDay(String day) {
-    selectedDay.value = day;
+  @override
+  void onClose() {
+    super.onClose();
+    _scheduleStream = null;
   }
 }

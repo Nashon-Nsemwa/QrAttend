@@ -95,6 +95,12 @@ class StudentSchedule extends StatelessWidget {
                   SizedBox(
                     height: screenHeight * 0.75,
                     child: Obx(() {
+                      if (controller.isLoading.value &&
+                          controller.schedules.isEmpty) {
+                        return Center(
+                          child: CircularProgressIndicator(color: Colors.blue),
+                        );
+                      }
                       List<ScheduleItem> daySchedule =
                           controller.schedules[controller.selectedDay.value] ??
                           [];
@@ -122,11 +128,11 @@ class StudentSchedule extends StatelessWidget {
                               child: Row(
                                 children: [
                                   Icon(
-                                    item.type == "lecture"
+                                    item.type == "session"
                                         ? Icons.school
                                         : Icons.pause_rounded,
                                     color:
-                                        item.type == "lecture"
+                                        item.type == "session"
                                             ? Colors.blue
                                             : Colors.orange,
                                     size: 30,

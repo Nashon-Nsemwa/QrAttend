@@ -112,23 +112,15 @@ class LectureSchedule extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // Selected day's schedule header
-                Obx(
-                  () => Text(
-                    "${controller.selectedDay.value} Schedule for ${controller.selectedCourse.value}",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-
                 // Schedule list with scroll support
                 SizedBox(
                   height: screenHeight * 0.6,
                   child: Obx(() {
+                    if (controller.isLoading.value) {
+                      return Center(
+                        child: CircularProgressIndicator(color: Colors.blue),
+                      );
+                    }
                     List<ScheduleItem> daySchedule =
                         controller.schedules[controller
                             .selectedCourse
@@ -158,11 +150,11 @@ class LectureSchedule extends StatelessWidget {
                             child: Row(
                               children: [
                                 Icon(
-                                  item.type == "lecture"
+                                  item.type == "session"
                                       ? Icons.school
                                       : Icons.pause_rounded,
                                   color:
-                                      item.type == "lecture"
+                                      item.type == "session"
                                           ? Colors.blue
                                           : Colors.orange,
                                   size: 30,
