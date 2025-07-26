@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:qrattend/services/NotificationServices.dart';
 import '../../utils/showAlert.dart'; // Make sure this points to your showAlert file
 
 class SigninLectureController extends GetxController {
@@ -59,6 +60,8 @@ class SigninLectureController extends GetxController {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
 
       box.write('role', 'lecture');
+      //notification listener
+      await NotificationService.initialize();
 
       _hideLoading();
       showAlert("Success", "Login successful", Colors.green);

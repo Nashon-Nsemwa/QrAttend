@@ -95,12 +95,42 @@ class GenerateQrController extends GetxController {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.deniedForever ||
-          permission == LocationPermission.denied) {
-        throw Exception("Location permission denied.");
-      }
     }
 
+    if (permission == LocationPermission.deniedForever) {
+      // 🛑 Show a snackbar and guide user to settings
+      Get.snackbar(
+        "Permission Denied",
+        "Location permission permanently denied. Please enable it in app settings.",
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        mainButton: TextButton(
+          onPressed: () {
+            Geolocator.openAppSettings();
+          },
+          child: const Text(
+            "Open Settings",
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+        duration: const Duration(seconds: 6),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      throw Exception("Location permission permanently denied.");
+    }
+
+    if (permission == LocationPermission.denied) {
+      // Still denied after request
+      Get.snackbar(
+        "Permission Denied",
+        "Location access is needed to generate QR code.",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      throw Exception("Location permission denied.");
+    }
+
+    // Fetch the location
     return await Geolocator.getCurrentPosition(
       locationSettings: locationSettings,
     ).timeout(
@@ -108,13 +138,11 @@ class GenerateQrController extends GetxController {
       onTimeout: () {
         Get.snackbar(
           "Timeout",
-          "Location request timed out. Please ensure GPS is enabled and try again.",
+          "Location request timed out. Please ensure GPS is enabled.",
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
-        throw Exception(
-          "Location request timed out. Please ensure GPS is enabled and try again.",
-        );
+        throw Exception("Location request timed out.");
       },
     );
   }

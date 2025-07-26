@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:qrattend/services/NotificationServices.dart';
 import '../../utils/showAlert.dart'; // Adjust the import path if needed
 
 class SigninStudentController extends GetxController {
@@ -64,6 +65,7 @@ class SigninStudentController extends GetxController {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
 
       _box.write('role', 'student');
+      await NotificationService.initialize();
 
       _hideLoading();
       showAlert("Success", "Login successful", Colors.green);

@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -46,10 +47,23 @@ import 'package:qrattend/views/lecturers/attendance.dart';
 import 'package:qrattend/views/lecturers/navigation.dart';
 import 'package:qrattend/views/lecturers/schedule.dart';
 
+//Background initialization in push notification
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  debugPrint('📥 Background message received: ${message.messageId}');
+}
+
+//implement global navigation for ontap pushNotification behaviour
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  //init firebaseService
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await GetStorage.init();
+  // Register background message handler
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   Get.put(UserSessionController());
   Get.put(ThemeController()); // ✅ Inject ThemeController
@@ -79,6 +93,7 @@ class MyApp extends StatelessWidget {
 
     return Obx(
       () => GetMaterialApp(
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         initialRoute: initialRoute, // ← Dynamic
         theme: lightmode,

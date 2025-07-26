@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_storage/get_storage.dart';
 
+import '../../services/NotificationServices.dart';
+
 class Signoutcontroller extends GetxController {
   void showLoading() {
     Get.dialog(
@@ -20,7 +22,9 @@ class Signoutcontroller extends GetxController {
     showLoading();
     await Future.delayed(Duration(milliseconds: 600));
     try {
+      await NotificationService.clearTokenOnSignOut();
       await FirebaseAuth.instance.signOut();
+
       _hideDialog();
       box.remove('role');
 

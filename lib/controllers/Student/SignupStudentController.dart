@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:qrattend/services/NotificationServices.dart';
 import '../../models/SignupStudentModel.dart';
 
 import '../../utils/showAlert.dart'; // ✅ Import your reusable alert
@@ -141,6 +142,7 @@ class SignupStudentController extends GetxController {
 
       final box = GetStorage();
       box.write('role', 'student');
+      await NotificationService.initialize();
 
       _hideLoading();
       showAlert("Success", "Signed up as ${student.name}", Colors.green);

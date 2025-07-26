@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qrattend/models/Notification.dart';
+import 'package:qrattend/services/NotificationServices.dart';
 
 class NotificationController extends GetxController {
   // State variables
@@ -14,6 +15,7 @@ class NotificationController extends GetxController {
   void onInit() {
     super.onInit();
     fetchNotifications(); // Simulate backend fetch without UI delay
+    NotificationService.requestPermissions();
   }
 
   // Simulate backend data fetch instantly (no delay)

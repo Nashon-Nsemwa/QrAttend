@@ -14,12 +14,6 @@ class PrivacyPolicy extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
               Text(
-                "Privacy Policy",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 16),
-
-              Text(
                 "1. Introduction",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),

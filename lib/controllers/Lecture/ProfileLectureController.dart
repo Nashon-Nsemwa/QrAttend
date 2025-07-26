@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:qrattend/models/LectureProfile.dart';
 
+import '../../services/NotificationServices.dart';
+
 class ProfileLectureController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -144,6 +146,7 @@ class ProfileLectureController extends GetxController {
       final user = _auth.currentUser;
       if (user == null) throw "No user logged in";
 
+      await NotificationService.clearTokenOnSignOut();
       await _firestore.collection('lectures').doc(user.uid).delete();
       await user.delete(); // Deletes from Firebase Auth
       _hideDialog();

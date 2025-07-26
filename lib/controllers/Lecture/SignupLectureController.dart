@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../models/SignupLectureModel.dart';
+import '../../services/NotificationServices.dart';
 import '../../utils/showAlert.dart';
 
 class SignupLectureController extends GetxController {
@@ -116,6 +117,7 @@ class SignupLectureController extends GetxController {
 
       // Save role locally
       box.write('role', 'lecture');
+      await NotificationService.initialize();
 
       Get.back(); // Close loading dialog
 
