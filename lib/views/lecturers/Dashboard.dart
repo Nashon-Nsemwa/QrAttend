@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:qrattend/views/lecturers/DashboardController.dart';
+import 'package:qrattend/controllers/Lecture/DashboardController.dart';
 
 class LectureDashboard extends StatelessWidget {
   const LectureDashboard({super.key});

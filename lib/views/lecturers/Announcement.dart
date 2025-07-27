@@ -17,6 +17,12 @@ class Announcement extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: theme.onSecondaryFixed,
+        actions: [
+          IconButton(
+            onPressed: () => Get.toNamed('/AnnouncementHistory'),
+            icon: Icon(Icons.history),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
@@ -26,8 +32,20 @@ class Announcement extends StatelessWidget {
             // Course Selection Dropdown
             Obx(() {
               if (controller.isLoadingCourses.value) {
-                return Center(
-                  child: CircularProgressIndicator(color: Colors.blue),
+                return TextFormField(
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: theme.onSecondary,
+                    labelText: "Loading....",
+                    labelStyle: TextStyle(color: Colors.grey),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.blue),
+                    ),
+                  ),
                 );
               }
               return DropdownButtonFormField<String>(

@@ -13,6 +13,7 @@ import 'package:qrattend/config/theme.dart';
 import 'package:qrattend/controllers/Shared/UserSessionController.dart';
 import 'package:qrattend/controllers/Shared/ThemeController.dart'; //
 import 'package:qrattend/firebase_options.dart';
+import 'package:qrattend/views/lecturers/announcementHistory.dart';
 import 'package:qrattend/views/shared/PrivacyPolicy.dart';
 import 'package:qrattend/views/shared/TermsConidtion.dart';
 
@@ -156,6 +157,10 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/Lecture_Profile', page: () => ProfileLecture()),
           GetPage(name: '/GenerateQr', page: () => GenerateQr()),
           GetPage(name: '/Announcement', page: () => Announcement()),
+          GetPage(
+            name: '/AnnouncementHistory',
+            page: () => Announcementhistory(),
+          ),
           GetPage(
             name: '/StudentList',
             page: () => StudentList(),
