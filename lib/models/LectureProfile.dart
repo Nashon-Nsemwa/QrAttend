@@ -17,29 +17,28 @@ class LectureModel {
     this.profileImagePath,
   });
 
-  factory LectureModel.fromMap(Map<String, dynamic> map) {
-    final details = map['details'] ?? {};
-
-    return LectureModel(
-      name: map['name'] ?? '',
-      email: map['email'] ?? '',
-      lectureId: map['lectureId'] ?? '',
-      department: map['department'] ?? '',
-      courses: List<String>.from(details['courses'] ?? []),
-      modules: List<String>.from(details['modules'] ?? []),
-      profileImagePath: map['profileImagePath'],
-    );
-  }
-
   Map<String, dynamic> toMap() {
     return {
       'name': name,
       'email': email,
       'lectureId': lectureId,
       'department': department,
-      'profileImagePath': profileImagePath,
-      'details': {'courses': courses, 'modules': modules},
+      'courses': courses,
+      'modules': modules,
+      if (profileImagePath != null) 'profileImagePath': profileImagePath,
     };
+  }
+
+  factory LectureModel.fromMap(Map<String, dynamic> map) {
+    return LectureModel(
+      name: map['name'] ?? '',
+      email: map['email'] ?? '',
+      lectureId: map['lectureId'] ?? '',
+      department: map['department'] ?? '',
+      courses: List<String>.from(map['courses'] ?? []),
+      modules: List<String>.from(map['modules'] ?? []),
+      profileImagePath: map['profileImagePath'],
+    );
   }
 
   LectureModel copyWith({
@@ -60,10 +59,5 @@ class LectureModel {
       modules: modules ?? this.modules,
       profileImagePath: profileImagePath ?? this.profileImagePath,
     );
-  }
-
-  @override
-  String toString() {
-    return 'LectureModel(name: $name, email: $email, id: $lectureId, department: $department, courses: $courses, modules: $modules';
   }
 }

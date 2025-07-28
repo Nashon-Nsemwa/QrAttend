@@ -28,16 +28,24 @@ class ProfileLectureController extends GetxController {
     fetchLectureData();
   }
 
-  void toggleEdit() => isEditing.value = !isEditing.value;
+  void toggleEdit() {
+    isEditing.value = !isEditing.value;
+  }
 
   void updateName(String name) {
-    nameController.text = name;
-    lecturer.update((l) => l?.copyWith(name: name));
+    final current = lecturer.value;
+    if (current != null) {
+      lecturer.value = current.copyWith(name: name);
+      nameController.text = name;
+    }
   }
 
   void updateEmail(String email) {
-    emailController.text = email;
-    lecturer.update((l) => l?.copyWith(email: email));
+    final current = lecturer.value;
+    if (current != null) {
+      lecturer.value = current.copyWith(email: email);
+      emailController.text = email;
+    }
   }
 
   Future<void> pickImage() async {
@@ -99,19 +107,22 @@ class ProfileLectureController extends GetxController {
 
     final updatedName = nameController.text.trim();
     final updatedEmail = emailController.text.trim();
+    final current = lecturer.value;
+
+    if (current == null) return;
+
+    final updatedLecturer = current.copyWith(
+      name: updatedName,
+      email: updatedEmail,
+    );
 
     try {
-      await _firestore.collection('lectures').doc(user.uid).update({
-        'name': updatedName,
-        'email': updatedEmail,
-      });
+      await _firestore
+          .collection('lectures')
+          .doc(user.uid)
+          .update(updatedLecturer.toMap());
 
-      // Update local model only for name and email
-      lecturer.value = lecturer.value?.copyWith(
-        name: updatedName,
-        email: updatedEmail,
-      );
-
+      lecturer.value = updatedLecturer;
       isEditing.value = false;
 
       Get.snackbar(
@@ -123,7 +134,7 @@ class ProfileLectureController extends GetxController {
     } catch (e) {
       Get.snackbar(
         "Error",
-        "Failed to update profile: $e",
+        "Failed to update Firestore: $e",
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
