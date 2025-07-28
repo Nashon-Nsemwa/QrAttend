@@ -26,6 +26,11 @@ class Notifications extends StatelessWidget {
         body: Padding(
           padding: EdgeInsets.all(16),
           child: Obx(() {
+            if (controller.isLoading.value) {
+              return Center(
+                child: CircularProgressIndicator(color: Colors.blue),
+              );
+            }
             if (controller.notifications.isEmpty) {
               return _buildNoNotifications();
             }
@@ -55,13 +60,22 @@ class Notifications extends StatelessWidget {
                     ),
                     margin: EdgeInsets.symmetric(vertical: 8),
                     child: ListTile(
-                      title: Text(
-                        "From: ${notification.from}",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: isSelected ? Colors.blue : theme.onSurface,
-                        ),
+                      title: Row(
+                        children: [
+                          Text(
+                            "From: ${notification.from}",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: isSelected ? Colors.blue : theme.onSurface,
+                            ),
+                          ),
+                          Spacer(),
+                          Text(
+                            notification.formattedTime,
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                        ],
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,10 +94,6 @@ class Notifications extends StatelessWidget {
                             style: TextStyle(color: theme.onPrimary),
                           ),
                         ],
-                      ),
-                      trailing: Text(
-                        notification.time,
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
                       ),
                     ),
                   ),
