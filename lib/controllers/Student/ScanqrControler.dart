@@ -39,6 +39,21 @@ class QRScanController extends GetxController {
     try {
       if (scannedCode == null) throw Exception("QR Code is empty");
 
+      // 🔐 Check location permission
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception("Location permission is required to scan.");
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception(
+          "Location permission permanently denied. Please enable it from settings.",
+        );
+      }
+
       final qrData = jsonDecode(scannedCode);
       final String course = qrData['course'];
       final String module = qrData['module'];
@@ -136,7 +151,7 @@ class QRScanController extends GetxController {
         },
       }, SetOptions(merge: true));
 
-      // ✅ Recalculate accurate summary (no increment)
+      // ✅ Recalculate accurate summary
       final allAttendanceDocs = await attendanceCollection.get();
 
       int totalClasses = allAttendanceDocs.docs.length;
@@ -177,6 +192,8 @@ class QRScanController extends GetxController {
       } else if (err.contains("already signed")) {
         msg = err;
       } else if (err.contains("not found") || err.contains("closer")) {
+        msg = err;
+      } else if (err.contains("permission")) {
         msg = err;
       }
 
