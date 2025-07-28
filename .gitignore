@@ -44,20 +44,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Flutter-generated files
-  
-/.metadata
-README.md
-/analysis_options.yaml
-/android/
-/ios/
-/linux/
-/macos/
-/test/
-/web/
-/windows/
-
-#firebase config files
-
-firebase.json
+# Firebase_Config_file
 lib/firebase_options.dart
+firebase.json
+
