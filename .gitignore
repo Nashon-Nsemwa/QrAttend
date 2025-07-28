@@ -58,5 +58,6 @@ README.md
 /windows/
 
 #firebase config files
-lib/firebase_options.dart
+
 firebase.json
+lib/firebase_options.dart
