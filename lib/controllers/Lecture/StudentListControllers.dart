@@ -7,7 +7,7 @@ class StudentListController extends GetxController {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final String lectureId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
-  var selectedCourse = ''.obs;
+  var selectedCourse = ''.obs; // e.g. "Computer Science Year 1"
   var selectedModule = ''.obs;
   var searchQuery = ''.obs;
 
@@ -23,6 +23,9 @@ class StudentListController extends GetxController {
     super.onInit();
     fetchMockCourses();
     ever(searchQuery, (_) => filterStudents());
+    ever(selectedCourse, (value) {
+      if (value.isNotEmpty) fetchModules(value);
+    });
     everAll([selectedCourse, selectedModule], (_) {
       if (selectedCourse.value.isNotEmpty && selectedModule.value.isNotEmpty) {
         fetchStudents();
@@ -30,31 +33,23 @@ class StudentListController extends GetxController {
     });
   }
 
-  /// 🔥 Load lecturer's courses and modules from Firebase
+  /// 🔥 Load lecturer's courses (as concatenated strings)
   void fetchMockCourses() async {
     isLoading.value = true;
     try {
-      final attendanceSnaps =
-          await firestore
-              .collectionGroup('attendance')
-              .where('students.$lectureId', isNotEqualTo: null)
-              .get();
+      final lectureDoc =
+          await firestore.collection('lectures').doc(lectureId).get();
+
+      if (!lectureDoc.exists) throw Exception("Lecture document not found.");
+
+      final lectureData = lectureDoc.data();
+      final List<dynamic> lectureCourseList =
+          lectureData?['details']?['courses'] ?? [];
 
       final Set<String> courseNames = {};
-      final Set<String> moduleNames = {};
 
-      for (var doc in attendanceSnaps.docs) {
-        final moduleId = doc.reference.parent.parent;
-        moduleNames.add(moduleId?.id ?? '');
-
-        final courseId = moduleId?.parent.parent?.id;
-        if (courseId != null) {
-          final courseDoc =
-              await firestore.collection('courses').doc(courseId).get();
-          if (courseDoc.exists) {
-            courseNames.add(courseDoc['name']);
-          }
-        }
+      for (String fullCourse in lectureCourseList) {
+        courseNames.add(fullCourse); // Already in "Course Year X" format
       }
 
       courses.assignAll(courseNames.toList());
@@ -64,7 +59,7 @@ class StudentListController extends GetxController {
     } catch (e) {
       Get.snackbar(
         "Loading Error",
-        "Failed to load courses and modules. Please check your connection or try again later.",
+        "Failed to load courses. Please try again later.\n$e",
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Get.theme.colorScheme.errorContainer,
         colorText: Get.theme.colorScheme.onErrorContainer,
@@ -74,22 +69,32 @@ class StudentListController extends GetxController {
     }
   }
 
-  /// 🔁 Updates `modules` list when course is selected
-  void fetchModules(String course) async {
+  /// 🔁 Fetch modules by splitting selectedCourse
+  void fetchModules(String concatenatedCourse) async {
     isLoading.value = true;
     selectedModule.value = '';
     modules.clear();
 
     try {
+      final parts = concatenatedCourse.trim().split(' ');
+      if (parts.length < 3) {
+        Get.snackbar("Invalid Format", "Course format is invalid.");
+        return;
+      }
+
+      final year = parts.sublist(parts.length - 2).join(' '); // "Year X"
+      final name = parts.sublist(0, parts.length - 2).join(' '); // course name
+
       final courseQuery =
           await firestore
               .collection('courses')
-              .where('name', isEqualTo: course)
+              .where('name', isEqualTo: name)
+              .where('year', isEqualTo: year)
               .limit(1)
               .get();
 
       if (courseQuery.docs.isEmpty) {
-        Get.snackbar("Not Found", "Selected course could not be found.");
+        Get.snackbar("Not Found", "Course not found.");
         return;
       }
 
@@ -109,7 +114,7 @@ class StudentListController extends GetxController {
     } catch (e) {
       Get.snackbar(
         "Module Error",
-        "Unable to fetch modules. Please try again later.",
+        "Unable to fetch modules.\n$e",
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Get.theme.colorScheme.errorContainer,
         colorText: Get.theme.colorScheme.onErrorContainer,
@@ -119,25 +124,32 @@ class StudentListController extends GetxController {
     }
   }
 
-  /// 🧠 Fetch students who have attended the selected module at least once
+  /// 🧠 Fetch students for selected course+module
   void fetchStudents() async {
     isLoading.value = true;
     allStudents.clear();
     filteredStudents.clear();
 
     try {
+      final parts = selectedCourse.value.trim().split(' ');
+      if (parts.length < 3) {
+        Get.snackbar("Invalid Format", "Selected course is invalid.");
+        return;
+      }
+
+      final year = parts.sublist(parts.length - 2).join(' ');
+      final name = parts.sublist(0, parts.length - 2).join(' ');
+
       final courseQuery =
           await firestore
               .collection('courses')
-              .where('name', isEqualTo: selectedCourse.value)
+              .where('name', isEqualTo: name)
+              .where('year', isEqualTo: year)
               .limit(1)
               .get();
 
       if (courseQuery.docs.isEmpty) {
-        Get.snackbar(
-          "Course Error",
-          "Course '${selectedCourse.value}' not found.",
-        );
+        Get.snackbar("Course Error", "Course not found.");
         return;
       }
 
@@ -151,19 +163,15 @@ class StudentListController extends GetxController {
               .get();
 
       if (moduleQuery.docs.isEmpty) {
-        Get.snackbar(
-          "Module Error",
-          "Module '${selectedModule.value}' not found.",
-        );
+        Get.snackbar("Module Error", "Module not found.");
         return;
       }
 
       final moduleDoc = moduleQuery.docs.first;
-
       final attendanceSnap =
           await moduleDoc.reference.collection('attendance').get();
-      final Set<String> uniqueStudentIds = {};
 
+      final Set<String> uniqueStudentIds = {};
       for (var doc in attendanceSnap.docs) {
         final studentsMap = doc.data()['students'];
         if (studentsMap != null && studentsMap is Map<String, dynamic>) {
@@ -172,11 +180,6 @@ class StudentListController extends GetxController {
       }
 
       if (uniqueStudentIds.isEmpty) {
-        Get.snackbar(
-          "No Attendance",
-          "No students have signed attendance for this module yet.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
         return;
       }
 
@@ -219,7 +222,7 @@ class StudentListController extends GetxController {
     } catch (e) {
       Get.snackbar(
         "Error",
-        "Failed to fetch student data. Please check your network or try again.",
+        "Failed to fetch students.\n$e",
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Get.theme.colorScheme.errorContainer,
         colorText: Get.theme.colorScheme.onErrorContainer,
@@ -230,13 +233,12 @@ class StudentListController extends GetxController {
   }
 
   void filterStudents() {
+    final query = searchQuery.value.toLowerCase();
     filteredStudents.value =
         allStudents.where((student) {
-          final query = searchQuery.value.toLowerCase();
-          return student.course == selectedCourse.value &&
-              student.module == selectedModule.value &&
-              (student.name.toLowerCase().contains(query) ||
-                  student.regNo.toLowerCase().contains(query));
+          return (student.name.toLowerCase().contains(query) ||
+                  student.regNo.toLowerCase().contains(query)) &&
+              student.module == selectedModule.value;
         }).toList();
   }
 
