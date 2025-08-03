@@ -8,7 +8,7 @@ QR Attend is a digital attendance management system that leverages QR code techn
 
 ## 📅 Download APK
 
-You can download the latest version of the QR Attend Android app here: [Download APK](https://your-download-link.com/qr-attend.apk)
+You can download the latest version of the QR Attend Android app here: [Download APK](https://github.com/Nashon-Nsemwa/QrAttend/releases/download/New/app-release.apk)
 
 > ⚠️ For testing purposes, use the following credentials:
 
