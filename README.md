@@ -26,7 +26,10 @@ You can download the latest version of the QR Attend Android app here: [Download
 
 ## Badges
 
-&#x20; &#x20;
+![Flutter](https://img.shields.io/badge/Flutter-Framework-blue)
+![Firebase](https://img.shields.io/badge/Firebase-Backend-yellow)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+![Build](https://img.shields.io/github/workflow/status/yourusername/qr-attend/Flutter%20CI)
 
 ---
 
@@ -113,12 +116,12 @@ QR Attend streamlines attendance for students and lecturers by replacing manual 
 
 * Email/password login
 * Forgot password support
-* Role verification (student, lecturer, admin)
+* Role verification (student, lecturer)
 
 ### User Management
 
 * Register students and lecturers
-* Update lecturer profile (name, email, image)
+* Update lecturer profile (name, email)
 * Store student data with UID references
 
 ### QR Code Generation and Scanning
@@ -136,7 +139,7 @@ QR Attend streamlines attendance for students and lecturers by replacing manual 
 ### Notifications
 
 * Firebase Cloud Messaging is used
-* Notifications are sent to user devices (e.g., class reminders)
+* Notifications are sent to user devices (e.g., schedule changes)
 * Migration from `sendMulticast` to `sendEachForMulticast` (as per Firebase recommendation)
 
 ---
@@ -276,7 +279,6 @@ await messaging.sendEachForMulticast({
 * Analytics dashboard for attendance trends
 * Role-based dashboard UI enhancements
 * Add email verification
-* Admin web dashboard
 * iOS configuration and support
 
 ---
