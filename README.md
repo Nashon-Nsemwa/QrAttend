@@ -100,13 +100,13 @@ QR Attend streamlines attendance for students and lecturers by replacing manual 
 ![Generate qr Screens](Screenshots/Generate_qr.png)
 
 ### QR Scan Screens
-![QR Scan Screens](Screenshots/scan_qr.png)
+![QR Scan Screens](Screenshots/Scan_qr.png)
 
 ### Attendance Screens
 ![Attendance Screens](Screenshots/Attendance_data.png)
 
 ### Error on Scan Screens
-![Error on scan Screens](Screenshots/Error_on_Scan.png)
+![Error on scan Screens](Screenshots/Error_on_scan.png)
 
 ---
 
