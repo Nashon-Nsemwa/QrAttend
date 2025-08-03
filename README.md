@@ -90,17 +90,23 @@ QR Attend streamlines attendance for students and lecturers by replacing manual 
 ## Screenshots
 > Replace the placeholders below with actual images from your app.
 
-### Login Screen
-![Login Screen](screenshots/login_screen.png)
+### Login Screens
+![Signin Screens](Screenshots/Sign_in.png)
 
-### Lecturer Dashboard
-![Lecturer Dashboard](screenshots/lecturer_dashboard.png)
+### Lecturer Dashboards
+![Lecturer&student Dashboards](Screenshots/role_dashboards.png)
 
-### QR Scan Screen
-![QR Scan Screen](screenshots/qr_scan_screen.png)
+### Generate qr Screens
+![Generate qr Screens](Screenshots/Generate_qr.png)
 
-### Attendance List
-![Attendance List](screenshots/attendance_list.png)
+### QR Scan Screens
+![QR Scan Screens](Screenshots/scan_qr.png)
+
+### Attendance Screens
+![Attendance Screens](Screenshots/attendance_data.png)
+
+### Error on Scan Screens
+![Error on scan Screens](Screenshots/Error_on_Scan.png)
 
 ---
 
