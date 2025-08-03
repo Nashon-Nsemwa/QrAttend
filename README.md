@@ -93,8 +93,8 @@ QR Attend streamlines attendance for students and lecturers by replacing manual 
 ### Login Screens
 ![Signin Screens](Screenshots/Sign_in.png)
 
-### Lecturer Dashboards
-![Lecturer&student Dashboards](Screenshots/role_dashboards.png)
+### Dashboards
+![Lecturer&student Dashboards](Screenshots/Role_dashboards.png)
 
 ### Generate qr Screens
 ![Generate qr Screens](Screenshots/Generate_qr.png)
@@ -103,7 +103,7 @@ QR Attend streamlines attendance for students and lecturers by replacing manual 
 ![QR Scan Screens](Screenshots/scan_qr.png)
 
 ### Attendance Screens
-![Attendance Screens](Screenshots/attendance_data.png)
+![Attendance Screens](Screenshots/Attendance_data.png)
 
 ### Error on Scan Screens
 ![Error on scan Screens](Screenshots/Error_on_Scan.png)
