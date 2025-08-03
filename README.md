@@ -40,7 +40,8 @@ QR Attend streamlines attendance for students and lecturers by replacing manual 
 
 ## Features
 - QR code-based attendance marking
-- Role-based access (Student, Lecturer, Admin)
+- gps distance location and exparation time for qrcodes(prevent proxy attendance)
+- Role-based access (Student, Lecturer)
 - Real-time notification system (using Firebase Cloud Messaging)
 - Firestore integration for data storage
 - User profile management
@@ -91,16 +92,16 @@ QR Attend streamlines attendance for students and lecturers by replacing manual 
 ### Authentication
 - Email/password login
 - Forgot password support
-- Role verification (student, lecturer, admin)
+- Role verification (student, lecturer)
 
 ### User Management
 - Register students and lecturers
-- Update lecturer profile (name, email, image)
+- Update lecturer profile (name, email, image(localy for now))
 - Store student data with UID references
 
 ### QR Code Generation and Scanning
-- Lecturers generate QR codes for their classes
-- Students scan QR code to mark attendance
+- Lecturers generate QR codes for their classes with exparation time and gps distance location
+- Students scan QR code to mark attendance by checking the validity of the exparation time and gps distance from lecturer
 
 ### Attendance Logging
 - Attendance is stored with metadata (timestamp, lecture ID, student ID)
@@ -108,7 +109,7 @@ QR Attend streamlines attendance for students and lecturers by replacing manual 
 
 ### Notifications
 - Firebase Cloud Messaging is used
-- Notifications are sent to user devices (e.g., class reminders)
+- Notifications are sent to user devices (e.g., schedule updates)
 - Migration from `sendMulticast` to `sendEachForMulticast` (as per Firebase recommendation)
 
 ---
@@ -135,12 +136,19 @@ students: {
   }
 }
 
-attendance: {
-  attendanceId: {
-    studentId: "...",
-    lectureId: "...",
-    timestamp: "..."
-  }
+courses: {
+  module:{
+     attendance: {
+     attendanceId: {
+      studentId: "...",
+      lectureId: "...",
+      timestamp: "..."
+      students: [
+       student:"...."
+      ]
+     }
+    }
+ }
 }
 ```
 
@@ -171,6 +179,8 @@ attendance: {
    - **Firebase Cloud Messaging:** Set up FCM for notifications
    - **Storage:** Optional, for user profile image uploads
 5. Set Firestore rules for proper read/write permissions.
+6. Altenative -use **Firebase CLI** for the configuration its simple and direct.
+   
 
 ---
 
@@ -225,7 +235,6 @@ await messaging.sendEachForMulticast({
 - Analytics dashboard for attendance trends
 - Role-based dashboard UI enhancements
 - Add email verification
-- Admin web dashboard
 - iOS configuration and support
 
 ---
